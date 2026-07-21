@@ -1,0 +1,14 @@
+/* Style variables for premium styling */
+:root {
+  --bg-dark: #09090b;
+  --panel-bg: rgba(18, 18, 24, 0.8);
+  --panel-border: rgba(255, 255, 255, 0.08);
+  --text-primary: #f4f4f5;
+  --text-secondary: #a1a1aa;
+  --accent-color: #8b5cf6; /* Violet */
+  --accent-glow: rgba(139, 92, 246, 0.4);
+  --accent-cyan: #06b6d4; /* Cyan */
+  --danger-color: #ef4444; /* Red */
+  --font-hud: 'Share Tech Mono', monospace;
+  --transition-speed: 0.3s;
+}

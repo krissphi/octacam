@@ -1,0 +1,50 @@
+{
+  "name": "OctaCam - Camera Utility for Creators",
+  "short_name": "OctaCam",
+  "description": "Lightweight, high-performance browser camera studio for content creators, live streamers, and video recordings. Features real-time 3D LUT color grading, chroma key, audio enhancement, FPS control, and photo snapshot gallery.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "landscape",
+  "theme_color": "#0f172a",
+  "background_color": "#0f172a",
+  "lang": "en",
+  "categories": ["photo", "video", "utilities", "productivity"],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Take Photo",
+      "short_name": "Photo",
+      "description": "Open OctaCam and take a photo snapshot",
+      "url": "/?action=snapshot",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Start Recording",
+      "short_name": "Record",
+      "description": "Open OctaCam and start video recording",
+      "url": "/?action=record",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

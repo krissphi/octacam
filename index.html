@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>OctaCam - Lightweight Camera Utility for Creators</title>
+  <meta name="description" content="OctaCam is a lightweight, high-performance browser camera utility for content creators, live streamers, and video recordings. Featuring custom 3D LUT color grading, real-time vocal enhancement, FPS control, and instant photo snapshot galleries.">
+  <meta name="keywords" content="OctaCam, webcam utility, stream overlay, camera filters, 3D LUT, stop motion, camera recorder, creator tools">
+  <meta name="author" content="krissphi">
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="OctaCam">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+  <!-- Open Graph / Social Media Meta Tags -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="OctaCam - Lightweight Camera Utility for Creators">
+  <meta property="og:description" content="Lightweight camera studio for content creators, live streamers, and video recordings. Custom 3D LUT color grading, audio enhancement, FPS stop-motion, and photo snapshots.">
+  <meta property="og:image" content="icons/icon-512.png">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="OctaCam - Lightweight Camera Utility for Creators">
+  <meta name="twitter:description" content="Lightweight camera studio for content creators, live streamers, and video recordings.">
+  <meta name="twitter:image" content="icons/icon-512.png">
+
+  <!-- Google Fonts: Space Grotesk & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Outfit:wght@300;400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <!-- CSS Stylesheet with Cache Buster -->
+  <link rel="stylesheet" href="style.css?v=9.2">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Camera Viewport Container -->
+    <div class="viewport-wrapper ratio-16-9" id="viewportWrapper">
+      <!-- The Canvas Container which bounds the video feed -->
+      <div class="canvas-container rounded" id="canvasContainer">
+        <!-- The Canvas showing the camera feed, filters, and overlays -->
+        <canvas id="cameraCanvas"></canvas>
+      </div>
+      
+      <!-- Video Element (Hidden from view, used as feed source) -->
+      <video id="webcamVideo" autoplay playsinline muted></video>
+
+      <!-- Error / Permission Block -->
+      <div class="camera-error-screen" id="errorScreen">
+        <i data-lucide="camera-off" class="error-icon"></i>
+        <h2>Camera Access Required</h2>
+        <p>Please allow camera access in your browser to start using the application.</p>
+        <button id="retryCameraBtn" class="btn btn-primary" aria-label="Retry Camera Connection">
+          <i data-lucide="refresh-cw"></i> Retry Connection
+        </button>
+      </div>
+
+      <!-- 3-Second Photo Countdown Overlay -->
+      <div class="countdown-overlay hidden" id="countdownOverlay">
+        <span class="countdown-number" id="countdownNumber">3</span>
+      </div>
+    </div>
+
+    <!-- Floating UI Toggle Button (shown when controls are hidden) -->
+    <button class="floating-toggle-btn" id="floatingToggleBtn" title="Show Interface (H)" aria-label="Show Control Sidebar">
+      <i data-lucide="sliders"></i>
+    </button>
+
+    <!-- Floating Snapshot Gallery Drawer -->
+    <div class="snapshot-gallery" id="snapshotGallery"></div>
+
+    <!-- Sidebar Dashboard Controls -->
+    <aside class="control-sidebar" id="controlSidebar">
+      <div class="sidebar-header">
+        <div class="logo-area">
+          <div class="logo-icon">O</div>
+          <div>
+            <h1>OctaCam</h1>
+            <p>Lightweight Camera Utility for Creators</p>
+          </div>
+        </div>
+        <button class="close-sidebar-btn" id="closeSidebarBtn" title="Hide Interface (H)" aria-label="Hide Control Sidebar">
+          <i data-lucide="chevron-left"></i>
+        </button>
+      </div>
+
+      <div class="sidebar-content">
+        <!-- Section 1: Devices -->
+        <div class="control-group collapsible-section">
+          <button type="button" class="section-header-btn" aria-expanded="true">
+            <span class="group-title"><i data-lucide="video"></i> Device Input Sources</span>
+            <i data-lucide="chevron-down" class="chevron-icon"></i>
+          </button>
+          <div class="section-body">
+            <!-- Section: Camera Source -->
+            <div class="sub-control">
+              <label class="sub-title">Camera</label>
+              <select id="cameraSelect" class="form-select">
+                <option value="">Loading cameras...</option>
+              </select>
+              <div class="select-info" id="cameraActiveInfo">Requesting camera permission...</div>
+              
+              <!-- Mirror Camera Toggle -->
+              <label class="toggle-item" style="margin-top: 8px;" title="Flip camera horizontally (Mirror View)">
+                <span>Mirror Camera Feed</span>
+                <input type="checkbox" id="toggleMirror">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <!-- Section: Audio Source -->
+            <div class="sub-control">
+              <label class="sub-title">Microphone</label>
+              <div class="select-row">
+                <select id="audioSelect" class="form-select">
+                  <option value="">Loading microphones...</option>
+                </select>
+                <button id="refreshDevicesBtn" class="refresh-devices-btn" title="Refresh Devices (Reload Mic/Headset)" aria-label="Refresh Microphone and Camera Devices">
+                  <i data-lucide="refresh-cw"></i>
+                </button>
+              </div>
+              <div class="select-info" id="audioActiveInfo">Requesting microphone permission...</div>
+
+              <!-- Real-Time Audio Frequency Visualizer -->
+              <div class="audio-visualizer-container" id="audioVisualizerContainer">
+                <div class="vu-header">
+                  <span>Audio Level Indicator</span>
+                  <span id="vuMeterLabel" class="vu-status">Silent</span>
+                </div>
+                <div class="vu-meter-track">
+                  <div class="vu-meter-fill" id="vuMeterBar"></div>
+                </div>
+                <div class="audio-freq-bars" id="audioFreqBars">
+                  <div class="freq-bar"></div>
+                  <div class="freq-bar"></div>
+                  <div class="freq-bar"></div>
+                  <div class="freq-bar"></div>
+                  <div class="freq-bar"></div>
+                  <div class="freq-bar"></div>
+                  <div class="freq-bar"></div>
+                  <div class="freq-bar"></div>
+                </div>
+              </div>
+
+              <!-- Audio Enhancer DSP Toggle -->
+              <label class="toggle-item" style="margin-top: 8px;" title="Enable 80Hz Low-Cut & 2.8kHz Vocal Clarity Boost">
+                <span>Vocal Enhancer & Hum Filter</span>
+                <input type="checkbox" id="toggleAudioEnhancer" checked>
+                <span class="toggle-slider"></span>
+              </label>
+
+              <!-- Headphone Sidetone Monitor Toggle & Volume Slider -->
+              <label class="toggle-item" style="margin-top: 6px;" title="Listen to your microphone audio live through headphones with zero delay">
+                <span>Listen to Mic (Headphones)</span>
+                <input type="checkbox" id="toggleAudioMonitor">
+                <span class="toggle-slider"></span>
+              </label>
+              
+              <div class="control-slider-wrapper" id="monitorVolumeWrapper" style="display: none; margin-top: 4px;">
+                <div class="slider-header">
+                  <span>Monitor Volume</span>
+                  <span id="monitorVolumeVal">80%</span>
+                </div>
+                <input type="range" id="monitorVolumeSlider" min="0" max="100" value="80" class="form-slider">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: FPS & Aspect Ratio -->
+        <div class="control-group collapsible-section">
+          <button type="button" class="section-header-btn" aria-expanded="true">
+            <span class="group-title"><i data-lucide="zap"></i> FPS & Aspect Ratio</span>
+            <i data-lucide="chevron-down" class="chevron-icon"></i>
+          </button>
+          <div class="section-body">
+            <div class="fps-presets">
+              <button class="fps-btn" data-fps="3">3</button>
+              <button class="fps-btn" data-fps="5">5</button>
+              <button class="fps-btn active" data-fps="8">8</button>
+              <button class="fps-btn" data-fps="12">12</button>
+              <button class="fps-btn" data-fps="15">15</button>
+              <button class="fps-btn" data-fps="24">24</button>
+              <button class="fps-btn" data-fps="30">30</button>
+            </div>
+            <div class="control-slider-wrapper">
+              <div class="slider-header">
+                <span>Custom FPS</span>
+                <span id="customFpsVal">8 FPS</span>
+              </div>
+              <input type="range" id="fpsSlider" min="1" max="60" value="8" class="form-slider">
+            </div>
+
+            <div class="sub-control" style="margin-top: 4px;">
+              <label class="sub-title">Aspect Ratio (Crop)</label>
+              <div class="ratio-presets">
+                <button class="ratio-btn active" data-ratio="16-9">16:9</button>
+                <button class="ratio-btn" data-ratio="4-3">4:3</button>
+                <button class="ratio-btn" data-ratio="1-1">1:1</button>
+                <button class="ratio-btn" data-ratio="9-16">9:16</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: Presets -->
+        <div class="control-group collapsible-section">
+          <button type="button" class="section-header-btn" aria-expanded="true">
+            <span class="group-title"><i data-lucide="palette"></i> Aesthetic Presets</span>
+            <i data-lucide="chevron-down" class="chevron-icon"></i>
+          </button>
+          <div class="section-body">
+            <div class="filter-grid">
+              <button class="filter-btn active" data-filter="none">
+                <div class="filter-preview filter-none"></div>
+                <span>Normal</span>
+              </button>
+              <button class="filter-btn" data-filter="lofi">
+                <div class="filter-preview filter-lofi"></div>
+                <span>Lo-Fi Warm</span>
+              </button>
+              <button class="filter-btn" data-filter="vhs">
+                <div class="filter-preview filter-vhs"></div>
+                <span>Retro VHS</span>
+              </button>
+              <button class="filter-btn" data-filter="cinematic">
+                <div class="filter-preview filter-cinematic"></div>
+                <span>Cinematic</span>
+              </button>
+              <button class="filter-btn" data-filter="monochrome">
+                <div class="filter-preview filter-mono"></div>
+                <span>B&W Grain</span>
+              </button>
+              <button class="filter-btn" data-filter="pixel">
+                <div class="filter-preview filter-pixel"></div>
+                <span>8-Bit Pixel</span>
+              </button>
+              <button class="filter-btn" data-filter="custom_lut" id="customLutPresetBtn" style="display: none;">
+                <div class="filter-preview filter-lut"></div>
+                <span id="customLutPresetName">Custom LUT</span>
+              </button>
+            </div>
+            <!-- Save Custom User Preset Form -->
+            <div class="save-preset-wrapper" style="margin-top: 10px; display: flex; gap: 6px;">
+              <input type="text" id="savePresetInput" class="form-input" placeholder="Preset name..." style="font-size: 12px; padding: 6px 10px; flex: 1; border-radius: 6px; background: rgba(0,0,0,0.4); border: 1px solid var(--panel-border); color: #fff;">
+              <button id="savePresetBtn" class="btn btn-primary" style="font-size: 12px; padding: 6px 10px; white-space: nowrap;" title="Save current overlay & image adjustments as a custom preset">
+                <i data-lucide="bookmark-plus"></i> Save
+              </button>
+            </div>
+
+            <div class="custom-lut-uploader" style="margin-top: 10px;">
+              <input type="file" id="lutFileInput" accept=".cube" style="display: none;">
+              <button id="uploadLutBtn" class="btn btn-outline btn-block" style="font-size: 12px; padding: 8px; border: 1px dashed var(--panel-border);" title="Upload Photoshop / Lightroom .cube 3D LUT file">
+                <i data-lucide="upload"></i> Upload Custom LUT (.cube)
+              </button>
+              <div id="lutStatusInfo" class="select-info" style="margin-top: 4px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3b: Greenscreen & Background -->
+        <div class="control-group collapsible-section">
+          <button type="button" class="section-header-btn" aria-expanded="true">
+            <span class="group-title"><i data-lucide="scissors"></i> Greenscreen & Background</span>
+            <i data-lucide="chevron-down" class="chevron-icon"></i>
+          </button>
+          <div class="section-body">
+            <!-- Toggle Chroma Key -->
+            <label class="toggle-item" title="Enable Chroma Key / Greenscreen removal">
+              <span>Enable Greenscreen (Chroma Key)</span>
+              <input type="checkbox" id="toggleChromaKey">
+              <span class="toggle-slider"></span>
+            </label>
+
+            <div id="chromaKeyControls" style="display: none; margin-top: 10px;">
+              <!-- Key Color Picker -->
+              <div class="sub-control">
+                <label class="sub-title">Key Color</label>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <input type="color" id="chromaColorInput" value="#00ff00" style="width: 36px; height: 32px; border: none; border-radius: 4px; cursor: pointer; background: transparent;">
+                  <button type="button" class="btn btn-outline" id="presetGreenBtn" style="font-size: 11px; padding: 4px 8px;">Green</button>
+                  <button type="button" class="btn btn-outline" id="presetBlueBtn" style="font-size: 11px; padding: 4px 8px;">Blue</button>
+                </div>
+              </div>
+
+              <!-- Color Tolerance / Similarity Slider -->
+              <div class="control-slider-wrapper" style="margin-top: 8px;">
+                <div class="slider-header">
+                  <span>Color Tolerance</span>
+                  <span id="chromaSimilarityVal">40%</span>
+                </div>
+                <input type="range" id="chromaSimilaritySlider" min="5" max="90" value="40" class="form-slider">
+              </div>
+
+              <!-- Edge Feathering / Smoothness Slider -->
+              <div class="control-slider-wrapper">
+                <div class="slider-header">
+                  <span>Edge Smoothness</span>
+                  <span id="chromaSmoothnessVal">10%</span>
+                </div>
+                <input type="range" id="chromaSmoothnessSlider" min="0" max="50" value="10" class="form-slider">
+              </div>
+
+              <!-- Background Type Selection -->
+              <div class="sub-control" style="margin-top: 8px;">
+                <label class="sub-title">Background Mode</label>
+                <select id="chromaBgTypeSelect" class="form-select">
+                  <option value="transparent">Transparent (OBS Stream Overlay)</option>
+                  <option value="preset">Preset Virtual Background</option>
+                  <option value="image">Upload Custom Image</option>
+                </select>
+              </div>
+
+              <!-- Preset Background Options -->
+              <div id="chromaBgPresetWrapper" style="display: none; margin-top: 8px;">
+                <label class="sub-title">Virtual Backgrounds</label>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                  <button type="button" class="btn btn-outline bg-preset-btn" data-bg-preset="studio" style="font-size: 11px; padding: 5px 8px;">🎬 Studio</button>
+                  <button type="button" class="btn btn-outline bg-preset-btn" data-bg-preset="cozy" style="font-size: 11px; padding: 5px 8px;">☕ Cozy Loft</button>
+                  <button type="button" class="btn btn-outline bg-preset-btn" data-bg-preset="cyber" style="font-size: 11px; padding: 5px 8px;">🌃 Neon Cyber</button>
+                  <button type="button" class="btn btn-outline bg-preset-btn" data-bg-preset="office" style="font-size: 11px; padding: 5px 8px;">🏢 Office</button>
+                </div>
+              </div>
+
+              <!-- Background Image File Uploader -->
+              <div id="chromaBgImageWrapper" style="display: none; margin-top: 8px;">
+                <input type="file" id="chromaBgFileInput" accept="image/*" style="display: none;">
+                <button id="uploadChromaBgBtn" class="btn btn-outline btn-block" style="font-size: 12px; padding: 8px; border: 1px dashed var(--panel-border);" title="Upload custom background image">
+                  <i data-lucide="image"></i> Upload Background Image
+                </button>
+                <div id="chromaBgStatusInfo" class="select-info" style="margin-top: 4px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 4: Overlays & Effects -->
+        <div class="control-group collapsible-section">
+          <button type="button" class="section-header-btn" aria-expanded="true">
+            <span class="group-title"><i data-lucide="layers"></i> Overlay Effects</span>
+            <i data-lucide="chevron-down" class="chevron-icon"></i>
+          </button>
+          <div class="section-body">
+            <div class="toggle-list">
+              <!-- HUD Toggle -->
+              <label class="toggle-item">
+                <span>HUD OSD (REC + Timestamp)</span>
+                <input type="checkbox" id="toggleHud" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            
+            <!-- Scanlines Slider -->
+            <div class="control-slider-wrapper">
+              <div class="slider-header">
+                <span>TV Scanlines</span>
+                <span id="scanlinesVal">0%</span>
+              </div>
+              <input type="range" id="scanlinesSlider" min="0" max="100" value="0" class="form-slider">
+            </div>
+            
+            <!-- Grain Slider -->
+            <div class="control-slider-wrapper">
+              <div class="slider-header">
+                <span>Film Grain Noise</span>
+                <span id="grainVal">0%</span>
+              </div>
+              <input type="range" id="grainSlider" min="0" max="100" value="0" class="form-slider">
+            </div>
+            
+            <!-- Vignette Slider -->
+            <div class="control-slider-wrapper">
+              <div class="slider-header">
+                <span>Vignette</span>
+                <span id="vignetteVal">0%</span>
+              </div>
+              <input type="range" id="vignetteSlider" min="0" max="100" value="0" class="form-slider">
+            </div>
+            
+            <!-- Rounded Corners Slider -->
+            <div class="control-slider-wrapper">
+              <div class="slider-header">
+                <span>Rounded Corners</span>
+                <span id="roundedVal">16px</span>
+              </div>
+              <input type="range" id="roundedSlider" min="0" max="40" value="16" class="form-slider">
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 5: Adjustments -->
+        <div class="control-group collapsible-section">
+          <button type="button" class="section-header-btn" aria-expanded="true">
+            <span class="group-title"><i data-lucide="sliders-horizontal"></i> Image Adjustments</span>
+            <i data-lucide="chevron-down" class="chevron-icon"></i>
+          </button>
+          <div class="section-body">
+            <div class="control-slider-wrapper">
+              <div class="slider-header">
+                <span>Brightness</span>
+                <span id="brightnessVal">100%</span>
+              </div>
+              <input type="range" id="brightnessSlider" min="50" max="150" value="100" class="form-slider">
+            </div>
+            <div class="control-slider-wrapper">
+              <div class="slider-header">
+                <span>Contrast</span>
+                <span id="contrastVal">100%</span>
+              </div>
+              <input type="range" id="contrastSlider" min="50" max="200" value="100" class="form-slider">
+            </div>
+            <div class="control-slider-wrapper">
+              <div class="slider-header">
+                <span>Saturation</span>
+                <span id="saturationVal">100%</span>
+              </div>
+              <input type="range" id="saturationSlider" min="0" max="200" value="100" class="form-slider">
+            </div>
+            <div class="control-slider-wrapper">
+              <div class="slider-header">
+                <span>Pixelation Size</span>
+                <span id="pixelSizeVal">4px</span>
+              </div>
+              <input type="range" id="pixelSizeSlider" min="2" max="16" value="4" class="form-slider" disabled>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 6: Help & Hotkeys -->
+        <div class="control-group collapsible-section">
+          <button type="button" class="section-header-btn" aria-expanded="true">
+            <span class="group-title"><i data-lucide="help-circle"></i> Guide & Shortcuts</span>
+            <i data-lucide="chevron-down" class="chevron-icon"></i>
+          </button>
+          <div class="section-body">
+            <div class="help-box">
+              <h3>Setup & Troubleshooting Guide:</h3>
+              <p>1. Press <strong>H</strong> on your keyboard to toggle interface visibility.</p>
+              <p>2. Add as a <strong>Browser Source</strong> or <strong>Window Capture</strong> in your streaming or video recording software.</p>
+              <p>3. If mic works in Windows Sound Recorder but is silent here: Open <em>Windows Settings -> Privacy & Security -> Microphone</em>, and ensure <strong>"Allow desktop apps to access your microphone"</strong> is turned ON.</p>
+              <div class="hotkey-list">
+                <div><kbd>H</kbd> Toggle Interface Visibility</div>
+                <div><kbd>P</kbd> Take Photo Snapshot</div>
+                <div><kbd>V</kbd> Start / Stop Video Recording</div>
+                <div><kbd>F</kbd> Toggle Fullscreen</div>
+                <div><kbd>R</kbd> Reset All Settings</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 7: Creator & Support -->
+        <div class="control-group collapsible-section">
+          <button type="button" class="section-header-btn" aria-expanded="true">
+            <span class="group-title"><i data-lucide="user"></i> Creator & Support</span>
+            <i data-lucide="chevron-down" class="chevron-icon"></i>
+          </button>
+          <div class="section-body">
+            <div class="creator-profile-card">
+              <div class="creator-profile-header">
+                <img src="assets/krissphi.png" alt="krissphi" class="creator-avatar-img">
+                <div>
+                  <h4 class="creator-name">krissphi</h4>
+                  <p class="creator-role">Software Developer & Creator</p>
+                </div>
+              </div>
+              <p class="creator-bio">
+                Building lightweight and practical software for web, mobile, and desktop platforms, with a focus on simplicity, performance, and usability.
+              </p>
+              <div class="creator-actions">
+                <a href="https://krissphi.vercel.app" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-creator" title="Visit krissphi.vercel.app">
+                  <i data-lucide="globe"></i> Website
+                </a>
+                <a href="https://sociabuzz.com/krissphi/support" target="_blank" rel="noopener noreferrer" class="btn btn-pink btn-creator" title="Support / Donate to Creator">
+                  <i data-lucide="heart"></i> Support
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="record-control-panel">
+          <div style="display: flex; gap: 6px; margin-bottom: 8px; align-items: center;">
+            <label class="sub-title" style="margin: 0; white-space: nowrap; font-size: 11px;">Photo Timer:</label>
+            <select id="photoTimerSelect" class="form-select" style="padding: 4px 8px; font-size: 12px; height: 30px;" aria-label="Select Photo Countdown Timer">
+              <option value="0">Instant (0s)</option>
+              <option value="3">3 Seconds (3-2-1)</option>
+            </select>
+          </div>
+          <div class="action-buttons-row">
+            <button id="snapshotBtn" class="btn btn-cyan btn-block" title="Take Photo Snapshot (P)" aria-label="Take Photo Snapshot">
+              <i data-lucide="camera"></i> Photo (P)
+            </button>
+            <button id="recordBtn" class="btn btn-danger btn-block" title="Start Video Recording (V)" aria-label="Start Video Recording">
+              <i data-lucide="video"></i> Record (V)
+            </button>
+          </div>
+          <div id="recordStatus" class="record-status-text">Ready to Record / Take Photo</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Hidden Semantic SEO Article for Search Engine Crawlers & Accessibility -->
+  <article class="seo-article-hidden" aria-hidden="true">
+    <header>
+      <h1>OctaCam - Lightweight Camera Utility for Creators</h1>
+      <p>Building lightweight and practical software for web, mobile, and desktop platforms, with a focus on simplicity, performance, and usability by krissphi.</p>
+    </header>
+    <section>
+      <h2>About OctaCam Studio</h2>
+      <p>OctaCam is a high-performance, browser-based webcam utility designed for content creators, live streamers, remote workers, and video enthusiasts. It provides instant camera controls, real-time stop-motion FPS adjustments (ranging from 1 FPS to 60 FPS), professional color grading presets, and broadcast-ready audio enhancement.</p>
+    </section>
+    <section>
+      <h2>Key Features & Capabilities</h2>
+      <ul>
+        <li><strong>Real-Time Chroma Key Greenscreen & Virtual Background Replacement:</strong> Supports green screen (#00ff00), blue screen (#0000ff), and custom key colors with adjustable tolerance and edge smoothness. Includes 4 zero-latency built-in virtual background presets (Studio, Cozy Loft, Neon Cyber, Office) and custom background image uploads.</li>
+        <li><strong>Adobe Photoshop & Lightroom 3D LUT Support:</strong> Parse and apply custom 3D LUT .cube files with automatic localStorage persistence and quota protection.</li>
+        <li><strong>Custom User Preset Saver:</strong> Save and manage custom overlay combinations, brightness, contrast, saturation, and pixelation adjustments into reusable grid preset tiles.</li>
+        <li><strong>Audio Sidetone & Vocal Enhancement:</strong> Zero-latency headphone microphone monitoring with adjustable gain and 80Hz high-pass filter + 2.8kHz vocal clarity boost.</li>
+        <li><strong>Camera Controls:</strong> Instant unmirrored / mirrored camera feed toggle, custom aspect ratios (16:9, 4:3, 1:1, 9:16), and instant hotkeys.</li>
+        <li><strong>Floating Snapshot Gallery & Recording:</strong> Take high-resolution PNG snapshots to a floating preview drawer or record WebM video files with 1-second corruption protection.</li>
+      </ul>
+    </section>
+    <footer>
+      <p>Developed with passion by <strong>krissphi</strong>. Portfolio: <a href="https://krissphi.vercel.app">https://krissphi.vercel.app</a> | Support: <a href="https://sociabuzz.com/krissphi/support">https://sociabuzz.com/krissphi/support</a></p>
+    </footer>
+  </article>
+
+  <script type="module" src="js/main.js?v=9.2"></script>
+
+  <!-- PWA Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(reg => console.log('[SW] Registered:', reg.scope))
+          .catch(err => console.warn('[SW] Registration failed:', err));
+      });
+    }
+  </script>
+</body>
+</html>

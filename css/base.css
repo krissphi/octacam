@@ -1,0 +1,33 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background-color: #09090b; /* Solid dark mode by default for browser view */
+  color: var(--text-primary);
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+  transition: background-color var(--transition-speed);
+}
+
+body.stream-mode {
+  background-color: transparent !important;
+}
+
+/* Background panel for dashboard view */
+.app-container {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  background-color: #09090b; /* Solid dark backing */
+  transition: background-color var(--transition-speed);
+}
+
+.app-container.ui-hidden {
+  background-color: transparent !important;
+}
