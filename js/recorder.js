@@ -8,6 +8,8 @@
 import { state } from './state.js';
 import { getAudioTrack } from './audio.js';
 
+let visibilityHandler = null;
+
 export function toggleRecording(canvasEl, recordBtnEl, recordStatusEl) {
   if (state.recording.isRecording) {
     stopRecording(recordBtnEl, recordStatusEl);
@@ -21,8 +23,8 @@ export function startRecording(canvasEl, recordBtnEl, recordStatusEl) {
   
   state.recording.chunks = [];
   
-  // Capture 30 FPS canvas stream
-  const recordStream = canvasEl.captureStream(30);
+  // Capture 30 FPS video stream from canvas
+  const recordStream = canvasEl.captureStream ? canvasEl.captureStream(30) : canvasEl.mozCaptureStream(30);
   
   // Attach independent audio track from microphone stream
   const audioTrack = getAudioTrack();
@@ -30,18 +32,27 @@ export function startRecording(canvasEl, recordBtnEl, recordStatusEl) {
     recordStream.addTrack(audioTrack);
   }
   
-  // Dynamic Bitrate Scaling based on active Target FPS:
-  // - 1 to 8 FPS (Retro stop-motion): 1.5 Mbps (~9 MB/min, ultra-compact)
-  // - 9 to 15 FPS (Lo-Fi smooth): 2.5 Mbps (~16 MB/min, crisp motion)
-  // - 16 to 60 FPS (Full smooth video): 4.0 Mbps (~26 MB/min, maximum 30 FPS fidelity)
-  let dynamicVideoBitrate = 1500000;
-  if (state.targetFps > 20) {
-    dynamicVideoBitrate = 4000000;
-  } else if (state.targetFps > 8) {
-    dynamicVideoBitrate = 2500000;
-  }
-  
-  // Codec Resolution
+  // Resolution-based bitrate scaling:
+  // The canvas is always full HD (1920x1080 or equivalent) regardless of FPS.
+  // Bitrate must match canvas pixel density to avoid blurry / blocky artifacts.
+  // Rule of thumb: ~4 bits per pixel per second at target FPS (VP9 efficiency).
+  const canvasW = canvasEl.width || 1920;
+  const canvasH = canvasEl.height || 1080;
+  const pixelCount = canvasW * canvasH;
+  const fps = Math.max(1, state.targetFps);
+
+  // Base: 8 Mbps for 1920x1080 @ 30fps. Scale proportionally.
+  const baseBitrate = 8_000_000; // 8 Mbps @ 1920×1080
+  const basePixels  = 1920 * 1080;
+  // Scale bitrate by pixel count and FPS relative to 30 fps baseline
+  const fpsFactor   = Math.min(1, fps / 30);  // reduce for low FPS (less motion data needed)
+  const resFactor   = pixelCount / basePixels;
+  // Clamp: minimum 2 Mbps (retro/low-res), maximum 12 Mbps (4K-equivalent)
+  const dynamicVideoBitrate = Math.round(
+    Math.max(2_000_000, Math.min(12_000_000, baseBitrate * resFactor * (0.4 + 0.6 * fpsFactor)))
+  );
+
+  // Codec selection
   let mimeType = 'video/webm;codecs=vp9,opus';
   if (!MediaRecorder.isTypeSupported(mimeType)) {
     mimeType = 'video/webm;codecs=vp8,opus';
@@ -71,12 +82,20 @@ export function startRecording(canvasEl, recordBtnEl, recordStatusEl) {
   };
   
   state.recording.mediaRecorder.onstop = () => {
+    state.recording.isRecording = false;
     saveRecordingFile();
   };
   
   state.recording.mediaRecorder.start(250);
   state.recording.isRecording = true;
   state.recording.startTime = performance.now();
+
+  visibilityHandler = () => {
+    if (document.hidden && state.recording.isRecording) {
+      console.warn('[Recorder] Tab hidden during recording — frame emission may stall.');
+    }
+  };
+  document.addEventListener('visibilitychange', visibilityHandler);
   
   if (recordBtnEl) {
     recordBtnEl.classList.add('recording');
@@ -110,14 +129,17 @@ export function stopRecording(recordBtnEl, recordStatusEl) {
   }
   
   stopTimerUpdate();
+
+  if (visibilityHandler) {
+    document.removeEventListener('visibilitychange', visibilityHandler);
+    visibilityHandler = null;
+  }
   
   try {
     state.recording.mediaRecorder.stop();
   } catch (e) {
     console.warn('[Recorder] Stop error:', e);
   }
-  
-  state.recording.isRecording = false;
   
   if (recordBtnEl) {
     recordBtnEl.classList.remove('recording');

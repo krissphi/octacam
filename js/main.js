@@ -75,6 +75,11 @@ window.addEventListener('DOMContentLoaded', async () => {
     navigator.mediaDevices.ondevicechange = async () => {
       console.log('[Hardware] USB Device change detected. Re-scanning & reconnecting...');
       await enumerateAllDevices(elements.cameraSelect, elements.audioSelect);
+      try {
+        await startAudioStream(elements.audioSelect.value || 'default', elements.audioActiveInfo);
+      } catch (e) {
+        console.warn('[Hardware] Auto-reconnect audio failed:', e);
+      }
       if (elements.cameraSelect.value) {
         try {
           await startCameraStream(elements.cameraSelect.value, elements.cameraActiveInfo, elements.errorScreen);

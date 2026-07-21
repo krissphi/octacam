@@ -309,11 +309,11 @@
                 <input type="range" id="chromaSmoothnessSlider" min="0" max="50" value="10" class="form-slider">
               </div>
 
-              <!-- Background Type Selection -->
               <div class="sub-control" style="margin-top: 8px;">
                 <label class="sub-title">Background Mode</label>
                 <select id="chromaBgTypeSelect" class="form-select">
                   <option value="transparent">Transparent (OBS Stream Overlay)</option>
+                  <option value="color">Solid Color</option>
                   <option value="preset">Preset Virtual Background</option>
                   <option value="image">Upload Custom Image</option>
                 </select>
@@ -322,11 +322,51 @@
               <!-- Preset Background Options -->
               <div id="chromaBgPresetWrapper" style="display: none; margin-top: 8px;">
                 <label class="sub-title">Virtual Backgrounds</label>
-                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                  <button type="button" class="btn btn-outline bg-preset-btn" data-bg-preset="studio" style="font-size: 11px; padding: 5px 8px;">🎬 Studio</button>
-                  <button type="button" class="btn btn-outline bg-preset-btn" data-bg-preset="cozy" style="font-size: 11px; padding: 5px 8px;">☕ Cozy Loft</button>
-                  <button type="button" class="btn btn-outline bg-preset-btn" data-bg-preset="cyber" style="font-size: 11px; padding: 5px 8px;">🌃 Neon Cyber</button>
-                  <button type="button" class="btn btn-outline bg-preset-btn" data-bg-preset="office" style="font-size: 11px; padding: 5px 8px;">🏢 Office</button>
+                <div class="filter-grid">
+                  <button type="button" class="filter-btn bg-preset-btn active" data-bg-preset="studio">
+                    <div class="filter-preview bg-preview-studio"></div>
+                    <span>Studio</span>
+                  </button>
+                  <button type="button" class="filter-btn bg-preset-btn" data-bg-preset="cozy">
+                    <div class="filter-preview bg-preview-cozy"></div>
+                    <span>Cozy Loft</span>
+                  </button>
+                  <button type="button" class="filter-btn bg-preset-btn" data-bg-preset="cyber">
+                    <div class="filter-preview bg-preview-cyber"></div>
+                    <span>Neon Cyber</span>
+                  </button>
+                  <button type="button" class="filter-btn bg-preset-btn" data-bg-preset="office">
+                    <div class="filter-preview bg-preview-office"></div>
+                    <span>Office</span>
+                  </button>
+                  <button type="button" class="filter-btn bg-preset-btn" data-bg-preset="nature">
+                    <div class="filter-preview bg-preview-nature"></div>
+                    <span>Sunset</span>
+                  </button>
+                  <button type="button" class="filter-btn bg-preset-btn" data-bg-preset="space">
+                    <div class="filter-preview bg-preview-space"></div>
+                    <span>Cosmos</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Solid Color Background Picker -->
+              <div id="chromaBgColorWrapper" style="display: none; margin-top: 8px;">
+                <label class="sub-title">Background Color</label>
+                <div style="display: flex; align-items: center; gap: 10px; margin-top: 6px;">
+                  <input type="color" id="chromaBgColorPicker" value="#000000"
+                    style="width: 48px; height: 36px; padding: 2px; border-radius: 8px; border: 1px solid var(--panel-border); background: transparent; cursor: pointer;">
+                  <span id="chromaBgColorVal" class="select-info" style="font-size: 13px; color: var(--text-secondary);">#000000</span>
+                  <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                    <button type="button" class="solid-color-swatch" data-color="#000000" title="Black" style="width:22px;height:22px;border-radius:50%;background:#000000;border:2px solid var(--panel-border);cursor:pointer;"></button>
+                    <button type="button" class="solid-color-swatch" data-color="#ffffff" title="White" style="width:22px;height:22px;border-radius:50%;background:#ffffff;border:2px solid var(--panel-border);cursor:pointer;"></button>
+                    <button type="button" class="solid-color-swatch" data-color="#1e1b4b" title="Deep Indigo" style="width:22px;height:22px;border-radius:50%;background:#1e1b4b;border:2px solid var(--panel-border);cursor:pointer;"></button>
+                    <button type="button" class="solid-color-swatch" data-color="#0f172a" title="Navy" style="width:22px;height:22px;border-radius:50%;background:#0f172a;border:2px solid var(--panel-border);cursor:pointer;"></button>
+                    <button type="button" class="solid-color-swatch" data-color="#134e4a" title="Dark Teal" style="width:22px;height:22px;border-radius:50%;background:#134e4a;border:2px solid var(--panel-border);cursor:pointer;"></button>
+                    <button type="button" class="solid-color-swatch" data-color="#7f1d1d" title="Dark Red" style="width:22px;height:22px;border-radius:50%;background:#7f1d1d;border:2px solid var(--panel-border);cursor:pointer;"></button>
+                    <button type="button" class="solid-color-swatch" data-color="#14532d" title="Dark Green" style="width:22px;height:22px;border-radius:50%;background:#14532d;border:2px solid var(--panel-border);cursor:pointer;"></button>
+                    <button type="button" class="solid-color-swatch" data-color="#78350f" title="Dark Amber" style="width:22px;height:22px;border-radius:50%;background:#78350f;border:2px solid var(--panel-border);cursor:pointer;"></button>
+                  </div>
                 </div>
               </div>
 
@@ -537,7 +577,7 @@
     </footer>
   </article>
 
-  <script type="module" src="js/main.js?v=9.2"></script>
+  <script type="module" src="js/main.js?v=19.0"></script>
 
   <!-- PWA Service Worker Registration -->
   <script>

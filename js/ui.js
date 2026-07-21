@@ -281,31 +281,34 @@ export function initUiEventListeners(elements) {
       saveUserPresetToStorage(newPreset);
       savePresetInput.value = '';
       renderUserPresetsInGrid(elements);
-      applyPreset(newPreset.id, elements);
+      // Use applyUserPresetObject so sliders reflect the saved values (not reset to Normal)
+      import('./ui/uiPresets.js').then(({ applyUserPresetObject }) => {
+        applyUserPresetObject(newPreset, elements, null);
+      });
     });
   }
 
   if (brightnessSlider) {
     brightnessSlider.addEventListener('input', () => {
-      state.videoAdjustments.brightness = brightnessSlider.value;
+      state.videoAdjustments.brightness = parseFloat(brightnessSlider.value);
       document.getElementById('brightnessVal').textContent = `${brightnessSlider.value}%`;
     });
   }
   if (contrastSlider) {
     contrastSlider.addEventListener('input', () => {
-      state.videoAdjustments.contrast = contrastSlider.value;
+      state.videoAdjustments.contrast = parseFloat(contrastSlider.value);
       document.getElementById('contrastVal').textContent = `${contrastSlider.value}%`;
     });
   }
   if (saturationSlider) {
     saturationSlider.addEventListener('input', () => {
-      state.videoAdjustments.saturation = saturationSlider.value;
+      state.videoAdjustments.saturation = parseFloat(saturationSlider.value);
       document.getElementById('saturationVal').textContent = `${saturationSlider.value}%`;
     });
   }
   if (pixelSizeSlider) {
     pixelSizeSlider.addEventListener('input', () => {
-      state.videoAdjustments.pixelSize = pixelSizeSlider.value;
+      state.videoAdjustments.pixelSize = parseInt(pixelSizeSlider.value, 10);
       document.getElementById('pixelSizeVal').textContent = `${pixelSizeSlider.value}px`;
     });
   }

@@ -4,7 +4,7 @@
  * Strategy: Cache-First for static assets, Network-First for index.html.
  */
 
-const CACHE_NAME = 'octacam-v9.2';
+const CACHE_NAME = 'octacam-v19.0';
 
 const STATIC_ASSETS = [
   '/',

@@ -42,6 +42,22 @@ export function resetAllUi(elements) {
   if (toggleChromaKeyEl) toggleChromaKeyEl.checked = false;
   const chromaKeyControls = document.getElementById('chromaKeyControls');
   if (chromaKeyControls) chromaKeyControls.style.display = 'none';
+  // Sync color picker and bg type select to reset values
+  const chromaColorInputEl = document.getElementById('chromaColorInput');
+  if (chromaColorInputEl) chromaColorInputEl.value = '#00ff00';
+  const chromaBgTypeSelectEl = document.getElementById('chromaBgTypeSelect');
+  if (chromaBgTypeSelectEl) chromaBgTypeSelectEl.value = 'transparent';
+  const chromaBgPresetWrapper = document.getElementById('chromaBgPresetWrapper');
+  if (chromaBgPresetWrapper) chromaBgPresetWrapper.style.display = 'none';
+  const chromaBgImageWrapper = document.getElementById('chromaBgImageWrapper');
+  if (chromaBgImageWrapper) chromaBgImageWrapper.style.display = 'none';
+  const chromaBgColorWrapper = document.getElementById('chromaBgColorWrapper');
+  if (chromaBgColorWrapper) chromaBgColorWrapper.style.display = 'none';
+  const chromaBgColorPicker = document.getElementById('chromaBgColorPicker');
+  if (chromaBgColorPicker) chromaBgColorPicker.value = '#000000';
+  const chromaBgColorVal = document.getElementById('chromaBgColorVal');
+  if (chromaBgColorVal) chromaBgColorVal.textContent = '#000000';
+  document.querySelectorAll('.bg-preset-btn').forEach(b => b.classList.remove('active'));
 
   state.audioMonitor = false;
   state.audioMonitorVolume = 80;

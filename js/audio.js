@@ -13,9 +13,16 @@ let audioAnalyser = null;
 let audioSourceNode = null;
 let dummyGainNode = null; // Sink node to keep Chrome WebAudio thread pulling PCM buffers
 let audioMonitorGainNode = null; // Headphone Sidetone Monitor node
+let highPassNode = null;         // BiquadFilter: high-pass (module-level to allow teardown)
+let clarityNode = null;          // BiquadFilter: vocal-clarity peak (module-level to allow teardown)
 
 let timeDomainDataArray = null; // Raw PCM waveform data (for VU meter volume peak)
 let freqDataArray = null;       // FFT frequency data (for 8 equalizer bars)
+
+// Cached DOM references — set lazily to avoid per-frame querySelector overhead
+let _vuBarEl = null;
+let _vuLabelEl = null;
+let _freqBarEls = null;
 
 export function getAudioStream() {
   return audioStream;
@@ -50,6 +57,8 @@ function teardownVisualizer() {
     try { audioMonitorGainNode.disconnect(); } catch (e) {}
     audioMonitorGainNode = null;
   }
+  if (highPassNode) { try { highPassNode.disconnect(); } catch(e) {} highPassNode = null; }
+  if (clarityNode)  { try { clarityNode.disconnect();  } catch(e) {} clarityNode = null; }
   state.audio.peakLevel = 0;
   state.audio.statusText = 'Senyap / Nonaktif';
   state.audio.statusColor = 'var(--text-secondary)';
@@ -194,12 +203,12 @@ function setupAudioVisualizer(stream) {
     
     if (state.audioEnhancer) {
       // 1. High-Pass Biquad Filter (80Hz Cutoff) - Cuts low-frequency table thumps & AC/fan hum
-      const highPassNode = audioCtx.createBiquadFilter();
+      highPassNode = audioCtx.createBiquadFilter();
       highPassNode.type = 'highpass';
       highPassNode.frequency.value = 80;
       
       // 2. Vocal Presence Peaking Filter (2.8kHz Boost) - Enhances speech clarity & crispness
-      const clarityNode = audioCtx.createBiquadFilter();
+      clarityNode = audioCtx.createBiquadFilter();
       clarityNode.type = 'peaking';
       clarityNode.frequency.value = 2800;
       clarityNode.Q.value = 1.2;
@@ -282,16 +291,16 @@ export function updateAudioVisualizerUI() {
   audioAnalyser.getByteFrequencyData(freqDataArray);
   
   // 3. Update Horizontal VU Meter Bar Fill
-  const vuBar = document.getElementById('vuMeterBar');
-  if (vuBar) {
-    vuBar.style.width = `${state.audio.peakLevel}%`;
+  if (!_vuBarEl) _vuBarEl = document.getElementById('vuMeterBar');
+  if (_vuBarEl) {
+    _vuBarEl.style.width = `${state.audio.peakLevel}%`;
   }
   
   // 4. Update Equalizer Frequency Bars
-  const freqBars = document.querySelectorAll('.freq-bar');
-  if (freqBars && freqBars.length > 0) {
-    const step = Math.max(1, Math.floor(freqDataArray.length / freqBars.length));
-    freqBars.forEach((bar, idx) => {
+  if (!_freqBarEls) _freqBarEls = document.querySelectorAll('.freq-bar');
+  if (_freqBarEls && _freqBarEls.length > 0) {
+    const step = Math.max(1, Math.floor(freqDataArray.length / _freqBarEls.length));
+    _freqBarEls.forEach((bar, idx) => {
       const val = freqDataArray[idx * step] || 0;
       const rawHeight = Math.max((val / 180) * 100, (maxDeviation / 32) * 80);
       const heightPercent = Math.min(100, Math.max(8, Math.round(rawHeight)));
@@ -300,37 +309,37 @@ export function updateAudioVisualizerUI() {
   }
   
   // 5. Update Visualizer Text Status
-  const label = document.getElementById('vuMeterLabel');
-  if (label) {
+  if (!_vuLabelEl) _vuLabelEl = document.getElementById('vuMeterLabel');
+  if (_vuLabelEl) {
     if (state.audio.isMuted) {
-      label.textContent = '⚠️ Muted';
-      label.style.color = '#f59e0b';
+      _vuLabelEl.textContent = '⚠️ Muted';
+      _vuLabelEl.style.color = '#f59e0b';
     } else if (state.audio.peakLevel > 60) {
-      label.textContent = '● Loud Input';
-      label.style.color = '#ef4444';
+      _vuLabelEl.textContent = '● Loud Input';
+      _vuLabelEl.style.color = '#ef4444';
     } else if (state.audio.peakLevel > 2) {
-      label.textContent = '● Audio Active';
-      label.style.color = '#00ff66';
+      _vuLabelEl.textContent = '● Audio Active';
+      _vuLabelEl.style.color = '#00ff66';
     } else {
-      label.textContent = 'Silent (Speak to test)';
-      label.style.color = 'var(--text-secondary)';
+      _vuLabelEl.textContent = 'Silent (Speak to test)';
+      _vuLabelEl.style.color = 'var(--text-secondary)';
     }
   }
 }
 
 function updateVisualizerIdleUI() {
   state.audio.peakLevel = 0;
-  const vuBar = document.getElementById('vuMeterBar');
-  if (vuBar) vuBar.style.width = '0%';
+  if (!_vuBarEl) _vuBarEl = document.getElementById('vuMeterBar');
+  if (_vuBarEl) _vuBarEl.style.width = '0%';
   
-  const freqBars = document.querySelectorAll('.freq-bar');
-  if (freqBars) {
-    freqBars.forEach(bar => bar.style.height = '8%');
+  if (!_freqBarEls) _freqBarEls = document.querySelectorAll('.freq-bar');
+  if (_freqBarEls) {
+    _freqBarEls.forEach(bar => bar.style.height = '8%');
   }
   
-  const label = document.getElementById('vuMeterLabel');
-  if (label) {
-    label.textContent = 'Silent / Inactive';
-    label.style.color = 'var(--text-secondary)';
+  if (!_vuLabelEl) _vuLabelEl = document.getElementById('vuMeterLabel');
+  if (_vuLabelEl) {
+    _vuLabelEl.textContent = 'Silent / Inactive';
+    _vuLabelEl.style.color = 'var(--text-secondary)';
   }
 }

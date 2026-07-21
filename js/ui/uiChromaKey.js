@@ -1,9 +1,12 @@
 /**
  * js/ui/uiChromaKey.js
  * Greenscreen & Virtual Background UI Controller
+ * Zero-stutter cached preset image generator.
  */
 
 import { state } from "../state.js";
+
+const virtualBgCacheMap = new Map();
 
 export function bindChromaKeyEvents() {
   const toggleChromaKey = document.getElementById("toggleChromaKey");
@@ -18,13 +21,34 @@ export function bindChromaKeyEvents() {
     "chromaSmoothnessSlider",
   );
   const chromaBgTypeSelect = document.getElementById("chromaBgTypeSelect");
-  const chromaBgPresetWrapper = document.getElementById(
-    "chromaBgPresetWrapper",
-  );
+  const chromaBgPresetWrapper = document.getElementById("chromaBgPresetWrapper");
+  const chromaBgColorWrapper = document.getElementById("chromaBgColorWrapper");
+  const chromaBgColorPicker = document.getElementById("chromaBgColorPicker");
+  const chromaBgColorVal = document.getElementById("chromaBgColorVal");
   const chromaBgImageWrapper = document.getElementById("chromaBgImageWrapper");
   const uploadChromaBgBtn = document.getElementById("uploadChromaBgBtn");
   const chromaBgFileInput = document.getElementById("chromaBgFileInput");
   const chromaBgStatusInfo = document.getElementById("chromaBgStatusInfo");
+
+  /** Generate a 1x1 solid-color canvas (zero overhead, cached per hex string) */
+  function generateSolidColorCanvas(hex) {
+    if (virtualBgCacheMap.has('color:' + hex)) {
+      return virtualBgCacheMap.get('color:' + hex);
+    }
+    const c = document.createElement('canvas');
+    c.width = 2; c.height = 2;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = hex;
+    ctx.fillRect(0, 0, 2, 2);
+    virtualBgCacheMap.set('color:' + hex, c);
+    return c;
+  }
+
+  function showBgWrappers(type) {
+    if (chromaBgPresetWrapper) chromaBgPresetWrapper.style.display = type === 'preset' ? 'block' : 'none';
+    if (chromaBgColorWrapper)  chromaBgColorWrapper.style.display  = type === 'color'  ? 'block' : 'none';
+    if (chromaBgImageWrapper)  chromaBgImageWrapper.style.display  = type === 'image'  ? 'block' : 'none';
+  }
 
   if (toggleChromaKey) {
     toggleChromaKey.addEventListener("change", () => {
@@ -76,16 +100,15 @@ export function bindChromaKeyEvents() {
   if (chromaBgTypeSelect) {
     chromaBgTypeSelect.addEventListener("change", () => {
       state.chromaKey.bgType = chromaBgTypeSelect.value;
-      if (chromaBgImageWrapper) {
-        chromaBgImageWrapper.style.display =
-          state.chromaKey.bgType === "image" ? "block" : "none";
-      }
-      if (chromaBgPresetWrapper) {
-        chromaBgPresetWrapper.style.display =
-          state.chromaKey.bgType === "preset" ? "block" : "none";
-      }
-      if (state.chromaKey.bgType === "preset" && !state.chromaKey.bgImage) {
-        state.chromaKey.bgImage = generateVirtualBgImage("studio");
+      showBgWrappers(state.chromaKey.bgType);
+
+      if (state.chromaKey.bgType === 'preset' && !state.chromaKey.bgImage) {
+        state.chromaKey.bgImage = generateVirtualBgImage('studio');
+      } else if (state.chromaKey.bgType === 'color') {
+        const hex = (chromaBgColorPicker ? chromaBgColorPicker.value : null) || '#000000';
+        state.chromaKey.bgImage = generateSolidColorCanvas(hex);
+      } else if (state.chromaKey.bgType !== 'image') {
+        state.chromaKey.bgImage = null;
       }
     });
   }
@@ -93,18 +116,37 @@ export function bindChromaKeyEvents() {
   document.querySelectorAll(".bg-preset-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       const presetType = btn.getAttribute("data-bg-preset");
-      state.chromaKey.bgType = "image";
+      state.chromaKey.bgType = "preset";
       state.chromaKey.bgImage = generateVirtualBgImage(presetType);
 
-      // Sync the select dropdown to 'image' mode
-      if (chromaBgTypeSelect) chromaBgTypeSelect.value = "image";
-      if (chromaBgImageWrapper) chromaBgImageWrapper.style.display = "block";
-      if (chromaBgPresetWrapper) chromaBgPresetWrapper.style.display = "none";
+      // Keep dropdown select synced to 'preset' mode
+      if (chromaBgTypeSelect) chromaBgTypeSelect.value = "preset";
+      showBgWrappers('preset');
 
-      document
-        .querySelectorAll(".bg-preset-btn")
-        .forEach((b) => b.classList.remove("active"));
+      document.querySelectorAll(".bg-preset-btn").forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
+    });
+  });
+
+  // --- Solid Color Picker ---
+  if (chromaBgColorPicker) {
+    chromaBgColorPicker.addEventListener('input', () => {
+      const hex = chromaBgColorPicker.value;
+      if (chromaBgColorVal) chromaBgColorVal.textContent = hex;
+      state.chromaKey.bgImage = generateSolidColorCanvas(hex);
+      state.chromaKey.bgType = 'color';
+    });
+  }
+
+  document.querySelectorAll('.solid-color-swatch').forEach((swatch) => {
+    swatch.addEventListener('click', () => {
+      const hex = swatch.getAttribute('data-color');
+      if (chromaBgColorPicker) chromaBgColorPicker.value = hex;
+      if (chromaBgColorVal) chromaBgColorVal.textContent = hex;
+      state.chromaKey.bgImage = generateSolidColorCanvas(hex);
+      state.chromaKey.bgType = 'color';
+      if (chromaBgTypeSelect) chromaBgTypeSelect.value = 'color';
+      showBgWrappers('color');
     });
   });
 
@@ -127,8 +169,10 @@ export function bindChromaKeyEvents() {
         const img = new Image();
         img.onload = () => {
           state.chromaKey.bgImage = img;
+          state.chromaKey.bgType = "image";
+          if (chromaBgTypeSelect) chromaBgTypeSelect.value = "image";
           if (chromaBgStatusInfo) {
-            chromaBgStatusInfo.textContent = `✓ BG: ${file.name.slice(0, 20)}`;
+            chromaBgStatusInfo.textContent = `✓ Active: ${file.name.slice(0, 18)}`;
             chromaBgStatusInfo.style.color = "#00ff66";
           }
         };
@@ -140,6 +184,10 @@ export function bindChromaKeyEvents() {
 }
 
 export function generateVirtualBgImage(type) {
+  if (virtualBgCacheMap.has(type)) {
+    return virtualBgCacheMap.get(type);
+  }
+
   const canvas = document.createElement("canvas");
   canvas.width = 1280;
   canvas.height = 720;
@@ -212,9 +260,41 @@ export function generateVirtualBgImage(type) {
     ctx.lineTo(900, 720);
     ctx.lineTo(0, 720);
     ctx.fill();
+  } else if (type === "nature") {
+    const grad = ctx.createLinearGradient(0, 0, 0, 720);
+    grad.addColorStop(0, "#7c2d12");
+    grad.addColorStop(0.4, "#ea580c");
+    grad.addColorStop(0.7, "#f59e0b");
+    grad.addColorStop(1, "#0284c7");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 1280, 720);
+
+    // Sun Glow
+    const sun = ctx.createRadialGradient(640, 400, 20, 640, 400, 300);
+    sun.addColorStop(0, "rgba(254, 240, 138, 0.6)");
+    sun.addColorStop(1, "rgba(249, 115, 22, 0)");
+    ctx.fillStyle = sun;
+    ctx.fillRect(0, 0, 1280, 720);
+  } else if (type === "space") {
+    const grad = ctx.createRadialGradient(640, 360, 50, 640, 360, 700);
+    grad.addColorStop(0, "#302b63");
+    grad.addColorStop(0.5, "#0f0c29");
+    grad.addColorStop(1, "#05030a");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 1280, 720);
+
+    // Stars
+    for (let s = 0; s < 60; s++) {
+      const sx = (s * 137) % 1280;
+      const sy = (s * 89) % 720;
+      const sr = (s % 3) + 1;
+      ctx.fillStyle = `rgba(255, 255, 255, ${0.3 + (s % 5) * 0.15})`;
+      ctx.beginPath();
+      ctx.arc(sx, sy, sr, 0, Math.PI * 2);
+      ctx.fill();
+    }
   }
 
-  const img = new Image();
-  img.src = canvas.toDataURL("image/png");
-  return img;
+  virtualBgCacheMap.set(type, canvas);
+  return canvas;
 }

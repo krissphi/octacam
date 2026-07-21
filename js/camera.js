@@ -50,7 +50,8 @@ export async function startCameraStream(deviceId, statusInfoEl, errorScreenEl) {
       video: {
         deviceId: { exact: deviceId },
         width: { ideal: 1920 },
-        height: { ideal: 1080 }
+        height: { ideal: 1080 },
+        frameRate: { ideal: 30 }
       },
       audio: false
     });
@@ -58,7 +59,8 @@ export async function startCameraStream(deviceId, statusInfoEl, errorScreenEl) {
       video: {
         deviceId: { ideal: deviceId },
         width: { ideal: 1920 },
-        height: { ideal: 1080 }
+        height: { ideal: 1080 },
+        frameRate: { ideal: 30 }
       },
       audio: false
     });
@@ -66,7 +68,8 @@ export async function startCameraStream(deviceId, statusInfoEl, errorScreenEl) {
     constraintsList.push({
       video: {
         width: { ideal: 1920 },
-        height: { ideal: 1080 }
+        height: { ideal: 1080 },
+        frameRate: { ideal: 30 }
       },
       audio: false
     });

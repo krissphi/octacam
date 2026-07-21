@@ -35,19 +35,27 @@ export function startCountdownSnapshot(canvasEl, containerEl, statusEl) {
   playCountdownBeep(440);
 
   const timer = setInterval(() => {
-    count--;
-    if (count > 0) {
-      numberEl.textContent = count;
-      numberEl.style.animation = 'none';
-      void numberEl.offsetWidth; // Force reflow
-      numberEl.style.animation = 'countPulse 0.6s ease-out';
-      playCountdownBeep(440);
-    } else {
+    try {
+      count--;
+      if (count > 0) {
+        numberEl.textContent = count;
+        numberEl.style.animation = 'none';
+        void numberEl.offsetWidth;
+        numberEl.style.animation = 'countPulse 0.6s ease-out';
+        playCountdownBeep(440);
+      } else {
+        clearInterval(timer);
+        overlayEl.classList.add('hidden');
+        isCountdownActive = false;
+        playCountdownBeep(880);
+        takePhotoSnapshot(canvasEl, containerEl, statusEl);
+      }
+    } catch (err) {
+      // Always unblock snapshot button on any unexpected error
       clearInterval(timer);
       overlayEl.classList.add('hidden');
       isCountdownActive = false;
-      playCountdownBeep(880); // Final high beep
-      takePhotoSnapshot(canvasEl, containerEl, statusEl);
+      console.error('[Snapshot] Countdown error:', err);
     }
   }, 1000);
 }
@@ -91,47 +99,53 @@ function addPhotoToGallery(canvasEl, filename) {
   const galleryEl = document.getElementById('snapshotGallery');
   if (!galleryEl) return;
 
-  const dataUrl = canvasEl.toDataURL('image/png');
+  // Use Blob URL instead of toDataURL to avoid holding MB of Base64 in JS closures
+  canvasEl.toBlob((blob) => {
+    if (!blob) return;
+    const blobUrl = URL.createObjectURL(blob);
 
-  const card = document.createElement('div');
-  card.className = 'gallery-card';
-  card.title = `Click to download ${filename}`;
+    const card = document.createElement('div');
+    card.className = 'gallery-card';
+    card.title = `Click to download ${filename}`;
 
-  card.innerHTML = `
-    <img src="${dataUrl}" alt="Snapshot Preview">
-    <div class="gallery-actions">
-      <button class="gallery-btn download-btn" title="Download Photo" aria-label="Download Photo ${filename}">
-        <i data-lucide="download"></i>
-      </button>
-      <button class="gallery-btn delete-btn" title="Delete Photo" aria-label="Delete Photo ${filename}">
-        <i data-lucide="trash-2"></i>
-      </button>
-    </div>
-  `;
+    card.innerHTML = `
+      <img src="${blobUrl}" alt="Snapshot Preview">
+      <div class="gallery-actions">
+        <button class="gallery-btn download-btn" title="Download Photo" aria-label="Download Photo ${filename}">
+          <i data-lucide="download"></i>
+        </button>
+        <button class="gallery-btn delete-btn" title="Delete Photo" aria-label="Delete Photo ${filename}">
+          <i data-lucide="trash-2"></i>
+        </button>
+      </div>
+    `;
 
-  const triggerDownload = (e) => {
-    e.stopPropagation();
-    const a = document.createElement('a');
-    a.href = dataUrl;
-    a.download = filename;
-    a.click();
-  };
+    const triggerDownload = (e) => {
+      e.stopPropagation();
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = filename;
+      a.click();
+    };
 
-  card.querySelector('img').addEventListener('click', triggerDownload);
-  card.querySelector('.download-btn').addEventListener('click', triggerDownload);
+    card.querySelector('img').addEventListener('click', triggerDownload);
+    card.querySelector('.download-btn').addEventListener('click', triggerDownload);
 
-  card.querySelector('.delete-btn').addEventListener('click', (e) => {
-    e.stopPropagation();
-    card.style.transform = 'scale(0) translateY(20px)';
-    card.style.opacity = '0';
-    card.style.transition = 'all 0.25s ease';
-    setTimeout(() => {
-      if (card.parentNode) card.parentNode.removeChild(card);
-    }, 250);
-  });
+    card.querySelector('.delete-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      // Revoke the blob URL immediately on delete to free RAM
+      URL.revokeObjectURL(blobUrl);
+      card.style.transform = 'scale(0) translateY(20px)';
+      card.style.opacity = '0';
+      card.style.transition = 'all 0.25s ease';
+      setTimeout(() => {
+        if (card.parentNode) card.parentNode.removeChild(card);
+      }, 250);
+    });
 
-  galleryEl.insertBefore(card, galleryEl.firstChild);
-  if (window.lucide) window.lucide.createIcons();
+    galleryEl.insertBefore(card, galleryEl.firstChild);
+    if (window.lucide) window.lucide.createIcons();
+  }, 'image/png');
 }
 
 let _shutterCtx = null;
