@@ -74,5 +74,22 @@ export function resetAllUi(elements) {
   const photoTimerSelect = document.getElementById('photoTimerSelect');
   if (photoTimerSelect) photoTimerSelect.value = 0;
 
+  state.zoom.enabled = false;
+  state.zoom.factor = 2.5;
+  state.zoom.active = false;
+  state.zoom.currentFactor = 1.0;
+  const toggleClickToZoomEl = document.getElementById('toggleClickToZoom');
+  if (toggleClickToZoomEl) toggleClickToZoomEl.checked = false;
+  const zoomFactorWrapper = document.getElementById('zoomFactorWrapper');
+  if (zoomFactorWrapper) zoomFactorWrapper.style.display = 'none';
+  const zoomFactorSlider = document.getElementById('zoomFactorSlider');
+  if (zoomFactorSlider) zoomFactorSlider.value = 2.5;
+  const zoomFactorVal = document.getElementById('zoomFactorVal');
+  if (zoomFactorVal) zoomFactorVal.textContent = '2.5x';
+  if (elements.canvasContainer) {
+    elements.canvasContainer.classList.remove('zoom-enabled');
+    elements.canvasContainer.classList.remove('zoom-active');
+  }
+
   saveUserPreferences();
 }

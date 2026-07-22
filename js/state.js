@@ -54,7 +54,18 @@ export const state = {
   
   audioEnhancer: true,
   audioMonitor: false,
-  audioMonitorVolume: 80
+  audioMonitorVolume: 80,
+
+  zoom: {
+    enabled: false,
+    factor: 2.5,
+    active: false,
+    targetX: 0.5,
+    targetY: 0.5,
+    currentFactor: 1.0,
+    currentX: 0.5,
+    currentY: 0.5
+  }
 };
 
 export function saveUserPreferences() {
@@ -68,7 +79,9 @@ export function saveUserPreferences() {
       audioMonitor: state.audioMonitor,
       audioMonitorVolume: state.audioMonitorVolume,
       audioEnhancer: state.audioEnhancer,
-      countdownSeconds: state.countdownSeconds
+      countdownSeconds: state.countdownSeconds,
+      zoomEnabled: state.zoom.enabled,
+      zoomFactor: state.zoom.factor
     };
     localStorage.setItem('octacam_user_settings', JSON.stringify(prefs));
   } catch (e) {
@@ -99,5 +112,9 @@ export function resetState() {
   state.overlays.vignette = 0;
   state.overlays.rounded = 16;
   state.countdownSeconds = 0;
+  state.zoom.enabled = false;
+  state.zoom.factor = 2.5;
+  state.zoom.active = false;
+  state.zoom.currentFactor = 1.0;
   saveUserPreferences();
 }

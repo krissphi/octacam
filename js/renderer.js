@@ -221,11 +221,36 @@ function drawMainCanvas() {
 
   mainCtx.clearRect(0, 0, W, H);
 
-  // --- Main frame: GPU hardware-accelerated blit ---
-  // During recording the mainCanvas is dimension-locked, so we fit cachedCanvas
-  // into it with letterboxing/pillarboxing to honour the chosen aspect ratio.
+  // --- 60 FPS Click-to-Zoom GPU Lerp Engine ---
+  const targetZoomFactor = (state.zoom.enabled && state.zoom.active) ? state.zoom.factor : 1.0;
+  state.zoom.currentFactor += (targetZoomFactor - state.zoom.currentFactor) * 0.22;
+  state.zoom.currentX += (state.zoom.targetX - state.zoom.currentX) * 0.22;
+  state.zoom.currentY += (state.zoom.targetY - state.zoom.currentY) * 0.22;
+
+  if (!state.zoom.active && state.zoom.currentFactor < 1.002) {
+    state.zoom.currentFactor = 1.0;
+  }
+
   const cW = cachedCanvas.width;
   const cH = cachedCanvas.height;
+
+  let srcX = 0;
+  let srcY = 0;
+  let srcW = cW;
+  let srcH = cH;
+
+  if (state.zoom.currentFactor > 1.001) {
+    const factor = state.zoom.currentFactor;
+    const cropW = cW / factor;
+    const cropH = cH / factor;
+    const centerX = state.zoom.currentX * cW;
+    const centerY = state.zoom.currentY * cH;
+
+    srcX = Math.max(0, Math.min(cW - cropW, centerX - cropW / 2));
+    srcY = Math.max(0, Math.min(cH - cropH, centerY - cropH / 2));
+    srcW = cropW;
+    srcH = cropH;
+  }
 
   // Compute destination rect that fits cW/cH inside W/H, centered
   const scale = Math.min(W / cW, H / cH);
@@ -243,12 +268,12 @@ function drawMainCanvas() {
       offscreenCanvas.height = smallH;
     }
     offscreenCtx.imageSmoothingEnabled = false;
-    offscreenCtx.drawImage(cachedCanvas, 0, 0, smallW, smallH);
+    offscreenCtx.drawImage(cachedCanvas, srcX, srcY, srcW, srcH, 0, 0, smallW, smallH);
     mainCtx.imageSmoothingEnabled = false;
     mainCtx.drawImage(offscreenCanvas, 0, 0, smallW, smallH, dstX, dstY, dstW, dstH);
   } else {
     mainCtx.imageSmoothingEnabled = true;
-    mainCtx.drawImage(cachedCanvas, 0, 0, cW, cH, dstX, dstY, dstW, dstH);
+    mainCtx.drawImage(cachedCanvas, srcX, srcY, srcW, srcH, dstX, dstY, dstW, dstH);
   }
 
   // --- Scanlines: single GPU pattern fill, 0 per-frame rebuild cost ---

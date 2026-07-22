@@ -114,6 +114,21 @@
                 <input type="checkbox" id="toggleMirror">
                 <span class="toggle-slider"></span>
               </label>
+
+              <!-- Click-to-Zoom Toggle & Magnification Slider -->
+              <label class="toggle-item" style="margin-top: 6px;" title="Enable click & hold on video canvas to magnify target area">
+                <span>Click-to-Zoom (Hold Area)</span>
+                <input type="checkbox" id="toggleClickToZoom">
+                <span class="toggle-slider"></span>
+              </label>
+
+              <div class="control-slider-wrapper" id="zoomFactorWrapper" style="display: none; margin-top: 4px;">
+                <div class="slider-header">
+                  <span>Zoom Level (Magnification)</span>
+                  <span id="zoomFactorVal">2.5x</span>
+                </div>
+                <input type="range" id="zoomFactorSlider" min="1.5" max="5.0" step="0.1" value="2.5" class="form-slider">
+              </div>
             </div>
 
             <!-- Section: Audio Source -->
@@ -577,7 +592,7 @@
     </footer>
   </article>
 
-  <script type="module" src="js/main.js?v=19.0"></script>
+  <script type="module" src="js/main.js?v=22.0"></script>
 
   <!-- PWA Service Worker Registration -->
   <script>

@@ -40,6 +40,15 @@
   image-rendering: pixelated;
 }
 
+.canvas-container.zoom-enabled #cameraCanvas {
+  cursor: zoom-in;
+  touch-action: none;
+}
+
+.canvas-container.zoom-enabled.zoom-active #cameraCanvas {
+  cursor: crosshair;
+}
+
 #webcamVideo {
   display: none;
 }

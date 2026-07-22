@@ -14,6 +14,7 @@ import { uploadLutFile, loadSavedLutFromStorage } from './lutParser.js';
 
 import { applyPreset, getUserPresetsFromStorage, saveUserPresetToStorage, renderUserPresetsInGrid } from './ui/uiPresets.js';
 import { bindChromaKeyEvents } from './ui/uiChromaKey.js';
+import { bindZoomEvents } from './ui/uiZoom.js';
 import { bindHotkeyEvents } from './ui/uiHotkeys.js';
 import { resetAllUi } from './ui/uiReset.js';
 
@@ -91,7 +92,27 @@ export function initUiEventListeners(elements) {
       const valEl = document.getElementById('monitorVolumeVal');
       if (valEl) valEl.textContent = `${savedPrefs.audioMonitorVolume}%`;
     }
+    if (typeof savedPrefs.zoomEnabled === 'boolean') {
+      state.zoom.enabled = savedPrefs.zoomEnabled;
+      const toggleClickToZoom = document.getElementById('toggleClickToZoom');
+      if (toggleClickToZoom) toggleClickToZoom.checked = savedPrefs.zoomEnabled;
+      const zoomFactorWrapper = document.getElementById('zoomFactorWrapper');
+      if (zoomFactorWrapper) zoomFactorWrapper.style.display = savedPrefs.zoomEnabled ? 'block' : 'none';
+      if (elements.canvasContainer) {
+        if (savedPrefs.zoomEnabled) elements.canvasContainer.classList.add('zoom-enabled');
+        else elements.canvasContainer.classList.remove('zoom-enabled');
+      }
+    }
+    if (typeof savedPrefs.zoomFactor === 'number') {
+      state.zoom.factor = savedPrefs.zoomFactor;
+      const slider = document.getElementById('zoomFactorSlider');
+      if (slider) slider.value = savedPrefs.zoomFactor;
+      const valEl = document.getElementById('zoomFactorVal');
+      if (valEl) valEl.textContent = `${savedPrefs.zoomFactor.toFixed(1)}x`;
+    }
   }
+
+  bindZoomEvents();
 
   if (cameraSelect) {
     cameraSelect.addEventListener('change', () => {
