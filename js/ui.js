@@ -176,6 +176,11 @@ export function initUiEventListeners(elements) {
         else btn.classList.remove('active');
       });
     }
+    if (typeof savedPrefs.noiseSuppression === 'boolean') {
+      state.noiseSuppression = savedPrefs.noiseSuppression;
+      const toggle = document.getElementById('toggleNoiseSuppression');
+      if (toggle) toggle.checked = savedPrefs.noiseSuppression;
+    }
   }
 
   bindZoomEvents();
@@ -196,6 +201,15 @@ export function initUiEventListeners(elements) {
     });
     audioSelect.addEventListener('click', ensureAudioContextResumed);
     audioSelect.addEventListener('focus', ensureAudioContextResumed);
+  }
+
+  const toggleNoiseSuppression = document.getElementById('toggleNoiseSuppression');
+  if (toggleNoiseSuppression) {
+    toggleNoiseSuppression.addEventListener('change', () => {
+      state.noiseSuppression = toggleNoiseSuppression.checked;
+      saveUserPreferences();
+      startAudioStream(state.currentAudioId, audioActiveInfo);
+    });
   }
 
   if (refreshDevicesBtn) {

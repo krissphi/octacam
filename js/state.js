@@ -53,6 +53,7 @@ export const state = {
   },
   
   audioEnhancer: true,
+  noiseSuppression: true,
   audioMonitor: false,
   audioMonitorVolume: 80,
 
@@ -94,6 +95,7 @@ export function saveUserPreferences() {
       audioMonitor: state.audioMonitor,
       audioMonitorVolume: state.audioMonitorVolume,
       audioEnhancer: state.audioEnhancer,
+      noiseSuppression: state.noiseSuppression,
       countdownSeconds: state.countdownSeconds,
       zoomEnabled: state.zoom.enabled,
       zoomFactor: state.zoom.factor,
@@ -135,6 +137,8 @@ export function resetState() {
   state.overlays.vignette = 0;
   state.overlays.rounded = 16;
   state.countdownSeconds = 0;
+  state.audioEnhancer = true;
+  state.noiseSuppression = true;
   state.zoom.enabled = false;
   state.zoom.factor = 2.5;
   state.zoom.active = false;

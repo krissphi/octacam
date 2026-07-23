@@ -13,8 +13,9 @@ let audioAnalyser = null;
 let audioSourceNode = null;
 let dummyGainNode = null; // Sink node to keep Chrome WebAudio thread pulling PCM buffers
 let audioMonitorGainNode = null; // Headphone Sidetone Monitor node
-let highPassNode = null;         // BiquadFilter: high-pass (module-level to allow teardown)
-let clarityNode = null;          // BiquadFilter: vocal-clarity peak (module-level to allow teardown)
+let highPassNode = null;         // BiquadFilter: high-pass 120Hz hum cut
+let highShelfNode = null;        // BiquadFilter: high-shelf 6kHz fan-hiss cut
+let clarityNode = null;          // BiquadFilter: vocal-clarity peak
 
 let timeDomainDataArray = null; // Raw PCM waveform data (for VU meter volume peak)
 let freqDataArray = null;       // FFT frequency data (for 8 equalizer bars)
@@ -57,8 +58,9 @@ function teardownVisualizer() {
     try { audioMonitorGainNode.disconnect(); } catch (e) {}
     audioMonitorGainNode = null;
   }
-  if (highPassNode) { try { highPassNode.disconnect(); } catch(e) {} highPassNode = null; }
-  if (clarityNode)  { try { clarityNode.disconnect();  } catch(e) {} clarityNode = null; }
+  if (highPassNode)  { try { highPassNode.disconnect();  } catch(e) {} highPassNode = null; }
+  if (highShelfNode) { try { highShelfNode.disconnect(); } catch(e) {} highShelfNode = null; }
+  if (clarityNode)   { try { clarityNode.disconnect();   } catch(e) {} clarityNode = null; }
   state.audio.peakLevel = 0;
   state.audio.statusText = 'Silent / Inactive';
   state.audio.statusColor = 'var(--text-secondary)';
@@ -67,7 +69,7 @@ function teardownVisualizer() {
 
 /**
  * Start or refresh microphone audio stream independently
- * Strictly binds to the selected deviceId without falling back to internal webcam mic.
+ * Strictly binds to the selected deviceId with hardware AI noise suppression & echo cancellation.
  */
 export async function startAudioStream(audioDeviceId, statusInfoEl) {
   stopAudioStream();
@@ -79,11 +81,13 @@ export async function startAudioStream(audioDeviceId, statusInfoEl) {
   
   state.currentAudioId = audioDeviceId || 'default';
   
-  // Build strict target constraints for the chosen microphone with high-fidelity audio parameters
+  // Build strict target constraints for smooth, unclipped speech audio
   const baseAudioParams = {
-    echoCancellation: false,
-    noiseSuppression: false,
-    autoGainControl: true
+    echoCancellation: false,                  // Disables aggressive AEC ducking/muting to prevent choppy voice syllables
+    noiseSuppression: state.noiseSuppression, // WebRTC AI Noise Suppression
+    autoGainControl: true,                    // Calibrates speech level above NS gate threshold so speech stays smooth
+    channelCount: 1,
+    sampleRate: 48000
   };
 
   let constraintsList = [];
@@ -91,9 +95,10 @@ export async function startAudioStream(audioDeviceId, statusInfoEl) {
   if (state.currentAudioId && state.currentAudioId !== 'default') {
     constraintsList.push({ audio: { deviceId: { exact: state.currentAudioId }, ...baseAudioParams } });
     constraintsList.push({ audio: { deviceId: { ideal: state.currentAudioId }, ...baseAudioParams } });
+    constraintsList.push({ audio: { deviceId: { ideal: state.currentAudioId }, noiseSuppression: true, autoGainControl: true } });
   } else {
     constraintsList.push({ audio: { ...baseAudioParams } });
-    constraintsList.push({ audio: true });
+    constraintsList.push({ audio: { noiseSuppression: true, autoGainControl: true } });
   }
   
   let successStream = null;
@@ -202,17 +207,17 @@ function setupAudioVisualizer(stream) {
     audioAnalyser.smoothingTimeConstant = 0.8;
     
     if (state.audioEnhancer) {
-      // 1. High-Pass Biquad Filter (80Hz Cutoff) - Cuts low-frequency table thumps & AC/fan hum
+      // 1. High-Pass Biquad Filter (80Hz Cutoff) - Cuts low-frequency table thumps & AC hum without thinning speech
       highPassNode = audioCtx.createBiquadFilter();
       highPassNode.type = 'highpass';
       highPassNode.frequency.value = 80;
       
-      // 2. Vocal Presence Peaking Filter (2.8kHz Boost) - Enhances speech clarity & crispness
+      // 2. Vocal Presence Peaking Filter (2.8kHz Boost) - Enhances speech clarity & presence smoothly
       clarityNode = audioCtx.createBiquadFilter();
       clarityNode.type = 'peaking';
       clarityNode.frequency.value = 2800;
-      clarityNode.Q.value = 1.2;
-      clarityNode.gain.value = 4.5;
+      clarityNode.Q.value = 1.0;
+      clarityNode.gain.value = 3.0;
       
       audioSourceNode.connect(highPassNode);
       highPassNode.connect(clarityNode);

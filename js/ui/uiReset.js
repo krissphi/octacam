@@ -132,5 +132,9 @@ export function resetAllUi(elements) {
     else btn.classList.remove('active');
   });
 
+  state.noiseSuppression = true;
+  const toggleNoiseSuppression = document.getElementById('toggleNoiseSuppression');
+  if (toggleNoiseSuppression) toggleNoiseSuppression.checked = true;
+
   saveUserPreferences();
 }

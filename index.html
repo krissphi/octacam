@@ -198,8 +198,15 @@
                 </div>
               </div>
 
+              <!-- AI Noise Suppression Toggle -->
+              <label class="toggle-item" style="margin-top: 8px;" title="Enable hardware AI noise cancellation to remove computer fan noise, AC hum, and outside room voices">
+                <span>AI Noise Suppression</span>
+                <input type="checkbox" id="toggleNoiseSuppression" checked>
+                <span class="toggle-slider"></span>
+              </label>
+
               <!-- Audio Enhancer DSP Toggle -->
-              <label class="toggle-item" style="margin-top: 8px;" title="Enable 80Hz Low-Cut & 2.8kHz Vocal Clarity Boost">
+              <label class="toggle-item" style="margin-top: 6px;" title="Enable 120Hz Low-Cut & 2.8kHz Vocal Clarity Boost">
                 <span>Vocal Enhancer & Hum Filter</span>
                 <input type="checkbox" id="toggleAudioEnhancer" checked>
                 <span class="toggle-slider"></span>
@@ -521,7 +528,7 @@
     </footer>
   </article>
 
-  <script type="module" src="js/main.js?v=29.0"></script>
+  <script type="module" src="js/main.js?v=32.0"></script>
 
   <!-- PWA Service Worker Registration -->
   <script>
