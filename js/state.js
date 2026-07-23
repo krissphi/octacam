@@ -75,6 +75,11 @@ export const state = {
     opacity: 70,
     mirror: false,
     text: 'Welcome to OctaCam Teleprompter!\n\nType or paste your speech script here. Adjust the scroll speed, font size, and background transparency for your maximum comfort.\n\nKeep your eyes focused near the camera lens while reading to maintain excellent eye contact with your audience.'
+  },
+
+  grid: {
+    enabled: false,
+    type: 'thirds' // 'thirds' | 'golden' | 'crosshair' | 'diagonal'
   }
 };
 
@@ -97,7 +102,9 @@ export function saveUserPreferences() {
       tpFontSize: state.teleprompter.fontSize,
       tpOpacity: state.teleprompter.opacity,
       tpMirror: state.teleprompter.mirror,
-      tpText: state.teleprompter.text
+      tpText: state.teleprompter.text,
+      gridEnabled: state.grid.enabled,
+      gridType: state.grid.type
     };
     localStorage.setItem('octacam_user_settings', JSON.stringify(prefs));
   } catch (e) {
@@ -138,5 +145,7 @@ export function resetState() {
   state.teleprompter.fontSize = 24;
   state.teleprompter.opacity = 70;
   state.teleprompter.mirror = false;
+  state.grid.enabled = false;
+  state.grid.type = 'thirds';
   saveUserPreferences();
 }

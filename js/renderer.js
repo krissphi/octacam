@@ -222,13 +222,15 @@ function drawMainCanvas() {
   mainCtx.clearRect(0, 0, W, H);
 
   // --- 60 FPS Click-to-Zoom GPU Lerp Engine ---
-  const targetZoomFactor = (state.zoom.enabled && state.zoom.active) ? state.zoom.factor : 1.0;
-  state.zoom.currentFactor += (targetZoomFactor - state.zoom.currentFactor) * 0.22;
-  state.zoom.currentX += (state.zoom.targetX - state.zoom.currentX) * 0.22;
-  state.zoom.currentY += (state.zoom.targetY - state.zoom.currentY) * 0.22;
+  if (state.zoom.enabled || state.zoom.currentFactor > 1.0) {
+    const targetZoomFactor = (state.zoom.enabled && state.zoom.active) ? state.zoom.factor : 1.0;
+    state.zoom.currentFactor += (targetZoomFactor - state.zoom.currentFactor) * 0.22;
+    state.zoom.currentX += (state.zoom.targetX - state.zoom.currentX) * 0.22;
+    state.zoom.currentY += (state.zoom.targetY - state.zoom.currentY) * 0.22;
 
-  if (!state.zoom.active && state.zoom.currentFactor < 1.002) {
-    state.zoom.currentFactor = 1.0;
+    if (!state.zoom.active && state.zoom.currentFactor < 1.002) {
+      state.zoom.currentFactor = 1.0;
+    }
   }
 
   const cW = cachedCanvas.width;
@@ -314,11 +316,106 @@ function drawMainCanvas() {
   if (state.overlays.hud) {
     drawHud(W, H);
   }
+
+  // --- Composition Grid Guides Overlay (Preview Only) ---
+  if (state.grid.enabled && !state.recording.isRecording) {
+    drawGridGuide(W, H);
+  }
 }
+
+function drawGridGuide(W, H) {
+  const type = state.grid.type || 'thirds';
+
+  mainCtx.save();
+  mainCtx.strokeStyle = 'rgba(6, 182, 212, 0.75)';
+  mainCtx.fillStyle = 'rgba(6, 182, 212, 0.85)';
+  mainCtx.lineWidth = 1.5; // Thicker & clearer line stroke
+  mainCtx.setLineDash([5, 4]); // Dotted guide line style
+
+  if (type === 'thirds') {
+    const x1 = W / 3;
+    const x2 = (W / 3) * 2;
+    const y1 = H / 3;
+    const y2 = (H / 3) * 2;
+
+    // Vertical lines
+    mainCtx.beginPath();
+    mainCtx.moveTo(x1, 0); mainCtx.lineTo(x1, H);
+    mainCtx.moveTo(x2, 0); mainCtx.lineTo(x2, H);
+    // Horizontal lines
+    mainCtx.moveTo(0, y1); mainCtx.lineTo(W, y1);
+    mainCtx.moveTo(0, y2); mainCtx.lineTo(W, y2);
+    mainCtx.stroke();
+
+    // Draw Power Points (intersection circles)
+    mainCtx.setLineDash([]);
+    const points = [[x1, y1], [x2, y1], [x1, y2], [x2, y2]];
+    for (const [px, py] of points) {
+      mainCtx.beginPath();
+      mainCtx.arc(px, py, 4, 0, Math.PI * 2);
+      mainCtx.fill();
+      mainCtx.beginPath();
+      mainCtx.arc(px, py, 8, 0, Math.PI * 2);
+      mainCtx.stroke();
+    }
+
+  } else if (type === 'golden') {
+    const x1 = W * 0.382;
+    const x2 = W * 0.618;
+    const y1 = H * 0.382;
+    const y2 = H * 0.618;
+
+    mainCtx.beginPath();
+    mainCtx.moveTo(x1, 0); mainCtx.lineTo(x1, H);
+    mainCtx.moveTo(x2, 0); mainCtx.lineTo(x2, H);
+    mainCtx.moveTo(0, y1); mainCtx.lineTo(W, y1);
+    mainCtx.moveTo(0, y2); mainCtx.lineTo(W, y2);
+    mainCtx.stroke();
+
+    mainCtx.setLineDash([]);
+    const points = [[x1, y1], [x2, y1], [x1, y2], [x2, y2]];
+    for (const [px, py] of points) {
+      mainCtx.beginPath();
+      mainCtx.arc(px, py, 4, 0, Math.PI * 2);
+      mainCtx.fill();
+    }
+
+  } else if (type === 'crosshair') {
+    const cx = W / 2;
+    const cy = H / 2;
+
+    mainCtx.beginPath();
+    mainCtx.moveTo(cx, 0); mainCtx.lineTo(cx, H);
+    mainCtx.moveTo(0, cy); mainCtx.lineTo(W, cy);
+    mainCtx.stroke();
+
+    mainCtx.setLineDash([]);
+    // Center target headshot framing guide oval
+    mainCtx.beginPath();
+    mainCtx.ellipse(cx, cy - 20, 110, 140, 0, 0, Math.PI * 2);
+    mainCtx.stroke();
+
+    mainCtx.beginPath();
+    mainCtx.arc(cx, cy, 6, 0, Math.PI * 2);
+    mainCtx.fill();
+
+  } else if (type === 'diagonal') {
+    mainCtx.beginPath();
+    mainCtx.moveTo(0, 0); mainCtx.lineTo(W, H);
+    mainCtx.moveTo(W, 0); mainCtx.lineTo(0, H);
+    mainCtx.moveTo(W / 2, 0); mainCtx.lineTo(W, H / 2);
+    mainCtx.lineTo(W / 2, H); mainCtx.lineTo(0, H / 2);
+    mainCtx.closePath();
+    mainCtx.stroke();
+  }
+
+  mainCtx.restore();
+}
+
+let _watermarkWidth = 0;
 
 function drawHud(W, H) {
   mainCtx.save();
-  mainCtx.shadowBlur = 4;
 
   // Cache date string — only rebuild once per second, not 60x/sec
   const nowMs = Date.now();
@@ -332,7 +429,6 @@ function drawHud(W, H) {
   const isDotVisible = Math.floor(nowMs / 500) % 2 === 0;
   if (isDotVisible) {
     mainCtx.fillStyle = '#ef4444';
-    mainCtx.shadowColor = 'rgba(239, 68, 68, 0.6)';
     mainCtx.beginPath();
     mainCtx.arc(30, 28, 5, 0, Math.PI * 2);
     mainCtx.fill();
@@ -340,14 +436,15 @@ function drawHud(W, H) {
 
   mainCtx.font = '14px "Share Tech Mono", monospace';
   mainCtx.fillStyle = '#00ff66';
-  mainCtx.shadowColor = 'rgba(0, 255, 102, 0.6)';
   mainCtx.fillText('REC', 45, 33);
 
   mainCtx.fillStyle = 'rgba(0, 255, 102, 0.85)';
   mainCtx.font = '13px "Share Tech Mono", monospace';
-  const watermarkText = '\u2605 MADE WITH OCTACAM \u2605';
-  const textWidth = mainCtx.measureText(watermarkText).width;
-  mainCtx.fillText(watermarkText, (W - textWidth) / 2, 33);
+  const watermarkText = '★ MADE WITH OCTACAM ★';
+  if (!_watermarkWidth) {
+    _watermarkWidth = mainCtx.measureText(watermarkText).width;
+  }
+  mainCtx.fillText(watermarkText, (W - _watermarkWidth) / 2, 33);
   mainCtx.fillText(`${state.targetFps} FPS`, W - 95, 33);
   mainCtx.fillText(_hudDateStr, 25, H - 25);
 

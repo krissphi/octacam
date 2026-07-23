@@ -118,7 +118,8 @@
 
 /* Grid & Layout Presets */
 .fps-presets,
-.ratio-presets {
+.ratio-presets,
+.grid-presets {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 8px;
@@ -129,7 +130,8 @@
 }
 
 .fps-btn,
-.ratio-btn {
+.ratio-btn,
+.grid-btn {
   background-color: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--panel-border);
   color: var(--text-secondary);
@@ -142,13 +144,15 @@
 }
 
 .fps-btn:hover,
-.ratio-btn:hover {
+.ratio-btn:hover,
+.grid-btn:hover {
   background-color: rgba(255, 255, 255, 0.08);
   color: var(--text-primary);
 }
 
 .fps-btn.active,
-.ratio-btn.active {
+.ratio-btn.active,
+.grid-btn.active {
   background-color: var(--accent-color);
   border-color: var(--accent-color);
   color: #fff;

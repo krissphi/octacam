@@ -263,12 +263,20 @@ export function ensureAudioContextResumed() {
  * Update UI VU Meter and Equalizer Bars on every render loop
  * Uses raw PCM TimeDomain wave data for 100% reliable amplitude peak calculation.
  */
+let _vizContainerEl = null;
+
 export function updateAudioVisualizerUI() {
   if (!audioAnalyser || !timeDomainDataArray || !freqDataArray) {
     updateVisualizerIdleUI();
     return;
   }
-  
+
+  // Skip DOM style mutations if the sidebar/visualizer container is hidden or collapsed
+  if (!_vizContainerEl) _vizContainerEl = document.getElementById('audioVisualizerContainer');
+  if (_vizContainerEl && _vizContainerEl.offsetParent === null) {
+    return;
+  }
+
   // Ensure AudioContext state is running
   if (audioCtx && audioCtx.state === 'suspended') {
     audioCtx.resume().catch(() => {});

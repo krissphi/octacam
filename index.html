@@ -250,335 +250,170 @@
             <div class="sub-control" style="margin-top: 4px;">
               <label class="sub-title">Aspect Ratio (Crop)</label>
               <div class="ratio-presets">
-                <button class="ratio-btn active" data-ratio="16-9">16:9</button>
-                <button class="ratio-btn" data-ratio="4-3">4:3</button>
-                <button class="ratio-btn" data-ratio="1-1">1:1</button>
-                <button class="ratio-btn" data-ratio="9-16">9:16</button>
+                <button type="button" class="ratio-btn active" data-ratio="16-9">16:9</button>
+                <button type="button" class="ratio-btn" data-ratio="4-3">4:3</button>
+                <button type="button" class="ratio-btn" data-ratio="1-1">1:1</button>
+                <button type="button" class="ratio-btn" data-ratio="9-16">9:16</button>
               </div>
             </div>
-          </div>
-        </div>
 
-        <!-- Section 3: Presets -->
-        <div class="control-group collapsible-section">
-          <button type="button" class="section-header-btn" aria-expanded="true">
-            <span class="group-title"><i data-lucide="palette"></i> Aesthetic Presets</span>
-            <i data-lucide="chevron-down" class="chevron-icon"></i>
-          </button>
-          <div class="section-body">
-            <div class="filter-grid">
-              <button class="filter-btn active" data-filter="none">
-                <div class="filter-preview filter-none"></div>
-                <span>Normal</span>
-              </button>
-              <button class="filter-btn" data-filter="lofi">
-                <div class="filter-preview filter-lofi"></div>
-                <span>Lo-Fi Warm</span>
-              </button>
-              <button class="filter-btn" data-filter="vhs">
-                <div class="filter-preview filter-vhs"></div>
-                <span>Retro VHS</span>
-              </button>
-              <button class="filter-btn" data-filter="cinematic">
-                <div class="filter-preview filter-cinematic"></div>
-                <span>Cinematic</span>
-              </button>
-              <button class="filter-btn" data-filter="monochrome">
-                <div class="filter-preview filter-mono"></div>
-                <span>B&W Grain</span>
-              </button>
-              <button class="filter-btn" data-filter="pixel">
-                <div class="filter-preview filter-pixel"></div>
-                <span>8-Bit Pixel</span>
-              </button>
-              <button class="filter-btn" data-filter="custom_lut" id="customLutPresetBtn" style="display: none;">
-                <div class="filter-preview filter-lut"></div>
-                <span id="customLutPresetName">Custom LUT</span>
-              </button>
-            </div>
-            <!-- Save Custom User Preset Form -->
-            <div class="save-preset-wrapper" style="margin-top: 10px; display: flex; gap: 6px;">
-              <input type="text" id="savePresetInput" class="form-input" placeholder="Preset name..." style="font-size: 12px; padding: 6px 10px; flex: 1; border-radius: 6px; background: rgba(0,0,0,0.4); border: 1px solid var(--panel-border); color: #fff;">
-              <button id="savePresetBtn" class="btn btn-primary" style="font-size: 12px; padding: 6px 10px; white-space: nowrap;" title="Save current overlay & image adjustments as a custom preset">
-                <i data-lucide="bookmark-plus"></i> Save
-              </button>
-            </div>
-
-            <div class="custom-lut-uploader" style="margin-top: 10px;">
-              <input type="file" id="lutFileInput" accept=".cube" style="display: none;">
-              <button id="uploadLutBtn" class="btn btn-outline btn-block" style="font-size: 12px; padding: 8px; border: 1px dashed var(--panel-border);" title="Upload Photoshop / Lightroom .cube 3D LUT file">
-                <i data-lucide="upload"></i> Upload Custom LUT (.cube)
-              </button>
-              <div id="lutStatusInfo" class="select-info" style="margin-top: 4px;"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Section 3b: Greenscreen & Background -->
-        <div class="control-group collapsible-section">
-          <button type="button" class="section-header-btn" aria-expanded="true">
-            <span class="group-title"><i data-lucide="scissors"></i> Greenscreen & Background</span>
-            <i data-lucide="chevron-down" class="chevron-icon"></i>
-          </button>
-          <div class="section-body">
-            <!-- Toggle Chroma Key -->
-            <label class="toggle-item" title="Enable Chroma Key / Greenscreen removal">
-              <span>Enable Greenscreen (Chroma Key)</span>
-              <input type="checkbox" id="toggleChromaKey">
-              <span class="toggle-slider"></span>
-            </label>
-
-            <div id="chromaKeyControls" style="display: none; margin-top: 10px;">
-              <!-- Key Color Picker -->
-              <div class="sub-control">
-                <label class="sub-title">Key Color</label>
-                <div style="display: flex; gap: 8px; align-items: center;">
-                  <input type="color" id="chromaColorInput" value="#00ff00" style="width: 36px; height: 32px; border: none; border-radius: 4px; cursor: pointer; background: transparent;">
-                  <button type="button" class="btn btn-outline" id="presetGreenBtn" style="font-size: 11px; padding: 4px 8px;">Green</button>
-                  <button type="button" class="btn btn-outline" id="presetBlueBtn" style="font-size: 11px; padding: 4px 8px;">Blue</button>
-                </div>
-              </div>
-
-              <!-- Color Tolerance / Similarity Slider -->
-              <div class="control-slider-wrapper" style="margin-top: 8px;">
-                <div class="slider-header">
-                  <span>Color Tolerance</span>
-                  <span id="chromaSimilarityVal">40%</span>
-                </div>
-                <input type="range" id="chromaSimilaritySlider" min="5" max="90" value="40" class="form-slider">
-              </div>
-
-              <!-- Edge Feathering / Smoothness Slider -->
-              <div class="control-slider-wrapper">
-                <div class="slider-header">
-                  <span>Edge Smoothness</span>
-                  <span id="chromaSmoothnessVal">10%</span>
-                </div>
-                <input type="range" id="chromaSmoothnessSlider" min="0" max="50" value="10" class="form-slider">
-              </div>
-
-              <div class="sub-control" style="margin-top: 8px;">
-                <label class="sub-title">Background Mode</label>
-                <select id="chromaBgTypeSelect" class="form-select">
-                  <option value="transparent">Transparent (OBS Stream Overlay)</option>
-                  <option value="color">Solid Color</option>
-                  <option value="preset">Preset Virtual Background</option>
-                  <option value="image">Upload Custom Image</option>
-                </select>
-              </div>
-
-              <!-- Preset Background Options -->
-              <div id="chromaBgPresetWrapper" style="display: none; margin-top: 8px;">
-                <label class="sub-title">Virtual Backgrounds</label>
-                <div class="filter-grid">
-                  <button type="button" class="filter-btn bg-preset-btn active" data-bg-preset="studio">
-                    <div class="filter-preview bg-preview-studio"></div>
-                    <span>Studio</span>
-                  </button>
-                  <button type="button" class="filter-btn bg-preset-btn" data-bg-preset="cozy">
-                    <div class="filter-preview bg-preview-cozy"></div>
-                    <span>Cozy Loft</span>
-                  </button>
-                  <button type="button" class="filter-btn bg-preset-btn" data-bg-preset="cyber">
-                    <div class="filter-preview bg-preview-cyber"></div>
-                    <span>Neon Cyber</span>
-                  </button>
-                  <button type="button" class="filter-btn bg-preset-btn" data-bg-preset="office">
-                    <div class="filter-preview bg-preview-office"></div>
-                    <span>Office</span>
-                  </button>
-                  <button type="button" class="filter-btn bg-preset-btn" data-bg-preset="nature">
-                    <div class="filter-preview bg-preview-nature"></div>
-                    <span>Sunset</span>
-                  </button>
-                  <button type="button" class="filter-btn bg-preset-btn" data-bg-preset="space">
-                    <div class="filter-preview bg-preview-space"></div>
-                    <span>Cosmos</span>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Solid Color Background Picker -->
-              <div id="chromaBgColorWrapper" style="display: none; margin-top: 8px;">
-                <label class="sub-title">Background Color</label>
-                <div style="display: flex; align-items: center; gap: 10px; margin-top: 6px;">
-                  <input type="color" id="chromaBgColorPicker" value="#000000"
-                    style="width: 48px; height: 36px; padding: 2px; border-radius: 8px; border: 1px solid var(--panel-border); background: transparent; cursor: pointer;">
-                  <span id="chromaBgColorVal" class="select-info" style="font-size: 13px; color: var(--text-secondary);">#000000</span>
-                  <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                    <button type="button" class="solid-color-swatch" data-color="#000000" title="Black" style="width:22px;height:22px;border-radius:50%;background:#000000;border:2px solid var(--panel-border);cursor:pointer;"></button>
-                    <button type="button" class="solid-color-swatch" data-color="#ffffff" title="White" style="width:22px;height:22px;border-radius:50%;background:#ffffff;border:2px solid var(--panel-border);cursor:pointer;"></button>
-                    <button type="button" class="solid-color-swatch" data-color="#1e1b4b" title="Deep Indigo" style="width:22px;height:22px;border-radius:50%;background:#1e1b4b;border:2px solid var(--panel-border);cursor:pointer;"></button>
-                    <button type="button" class="solid-color-swatch" data-color="#0f172a" title="Navy" style="width:22px;height:22px;border-radius:50%;background:#0f172a;border:2px solid var(--panel-border);cursor:pointer;"></button>
-                    <button type="button" class="solid-color-swatch" data-color="#134e4a" title="Dark Teal" style="width:22px;height:22px;border-radius:50%;background:#134e4a;border:2px solid var(--panel-border);cursor:pointer;"></button>
-                    <button type="button" class="solid-color-swatch" data-color="#7f1d1d" title="Dark Red" style="width:22px;height:22px;border-radius:50%;background:#7f1d1d;border:2px solid var(--panel-border);cursor:pointer;"></button>
-                    <button type="button" class="solid-color-swatch" data-color="#14532d" title="Dark Green" style="width:22px;height:22px;border-radius:50%;background:#14532d;border:2px solid var(--panel-border);cursor:pointer;"></button>
-                    <button type="button" class="solid-color-swatch" data-color="#78350f" title="Dark Amber" style="width:22px;height:22px;border-radius:50%;background:#78350f;border:2px solid var(--panel-border);cursor:pointer;"></button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Background Image File Uploader -->
-              <div id="chromaBgImageWrapper" style="display: none; margin-top: 8px;">
-                <input type="file" id="chromaBgFileInput" accept="image/*" style="display: none;">
-                <button id="uploadChromaBgBtn" class="btn btn-outline btn-block" style="font-size: 12px; padding: 8px; border: 1px dashed var(--panel-border);" title="Upload custom background image">
-                  <i data-lucide="image"></i> Upload Background Image
-                </button>
-                <div id="chromaBgStatusInfo" class="select-info" style="margin-top: 4px;"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Section: Teleprompter Script -->
-        <div class="control-group collapsible-section">
-          <button type="button" class="section-header-btn" aria-expanded="true">
-            <span class="group-title"><i data-lucide="file-text"></i> Teleprompter Script</span>
-            <i data-lucide="chevron-down" class="chevron-icon"></i>
-          </button>
-          <div class="section-body">
-            <label class="toggle-item" title="Show Teleprompter Script Overlay over Camera View">
-              <span>Enable Teleprompter</span>
-              <input type="checkbox" id="toggleTeleprompter">
-              <span class="toggle-slider"></span>
-            </label>
-
-            <div id="teleprompterControlsWrapper" style="display: none; margin-top: 8px;">
-              <div class="sub-control">
-                <label class="sub-title">Script Content</label>
-                <textarea id="teleprompterScriptInput" class="form-textarea" rows="5" placeholder="Type or paste your speech script here..."></textarea>
-              </div>
-
-              <div style="display: flex; gap: 8px; margin-top: 8px;">
-                <button type="button" id="tpSidebarPlayBtn" class="btn btn-primary" style="flex: 1; font-size: 12px; padding: 8px 10px;">
-                  <i data-lucide="play" id="tpSidebarPlayIcon"></i> <span id="tpSidebarPlayText">Start Scroll</span>
-                </button>
-                <button type="button" id="tpSidebarResetBtn" class="btn btn-outline" style="font-size: 12px; padding: 8px 10px;" title="Rewind to Top">
-                  <i data-lucide="rotate-ccw"></i>
-                </button>
-              </div>
-
-              <div class="control-slider-wrapper" style="margin-top: 8px;">
-                <div class="slider-header">
-                  <span>Scroll Speed</span>
-                  <span id="tpSpeedVal">3</span>
-                </div>
-                <input type="range" id="tpSpeedSlider" min="1" max="10" value="3" class="form-slider">
-              </div>
-
-              <div class="control-slider-wrapper">
-                <div class="slider-header">
-                  <span>Font Size</span>
-                  <span id="tpFontSizeVal">24px</span>
-                </div>
-                <input type="range" id="tpFontSizeSlider" min="16" max="48" value="24" class="form-slider">
-              </div>
-
-              <div class="control-slider-wrapper">
-                <div class="slider-header">
-                  <span>Background Opacity</span>
-                  <span id="tpOpacityVal">70%</span>
-                </div>
-                <input type="range" id="tpOpacitySlider" min="20" max="95" value="70" class="form-slider">
-              </div>
-
-              <label class="toggle-item" style="margin-top: 6px;" title="Flip text horizontally (For physical teleprompter mirror glass setup)">
-                <span>Mirror Text (Glass Rig)</span>
-                <input type="checkbox" id="toggleTpMirror">
+            <!-- Composition Grid Guide (Framing Overlay) -->
+            <div class="sub-control" style="margin-top: 8px;">
+              <label class="toggle-item" title="Enable framing grid overlay to align subject composition">
+                <span>Composition Grid Guide</span>
+                <input type="checkbox" id="toggleGrid">
                 <span class="toggle-slider"></span>
               </label>
+
+              <div id="gridPresetWrapper" style="display: none; margin-top: 8px;">
+                <div class="grid-presets">
+                  <button type="button" class="grid-btn active" data-grid="thirds">3x3</button>
+                  <button type="button" class="grid-btn" data-grid="golden">Golden</button>
+                  <button type="button" class="grid-btn" data-grid="crosshair">Cross</button>
+                  <button type="button" class="grid-btn" data-grid="diagonal">Diag</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Section 4: Overlays & Effects -->
+        <!-- Combined Section: Visual Effects & Presets -->
         <div class="control-group collapsible-section">
           <button type="button" class="section-header-btn" aria-expanded="true">
-            <span class="group-title"><i data-lucide="layers"></i> Overlay Effects</span>
+            <span class="group-title"><i data-lucide="palette"></i> Presets & Visual Effects</span>
             <i data-lucide="chevron-down" class="chevron-icon"></i>
           </button>
           <div class="section-body">
-            <div class="toggle-list">
-              <!-- HUD Toggle -->
-              <label class="toggle-item">
-                <span>HUD OSD (REC + Timestamp)</span>
-                <input type="checkbox" id="toggleHud" checked>
-                <span class="toggle-slider"></span>
-              </label>
-            </div>
-            
-            <!-- Scanlines Slider -->
-            <div class="control-slider-wrapper">
-              <div class="slider-header">
-                <span>TV Scanlines</span>
-                <span id="scanlinesVal">0%</span>
+            <!-- Part 1: Aesthetic Presets -->
+            <div class="sub-control">
+              <label class="sub-title">Aesthetic Presets</label>
+              <div class="filter-grid" style="margin-top: 6px;">
+                <button type="button" class="filter-btn active" data-filter="none">
+                  <div class="filter-preview filter-none"></div>
+                  <span>Normal</span>
+                </button>
+                <button type="button" class="filter-btn" data-filter="lofi">
+                  <div class="filter-preview filter-lofi"></div>
+                  <span>Lo-Fi Warm</span>
+                </button>
+                <button type="button" class="filter-btn" data-filter="vhs">
+                  <div class="filter-preview filter-vhs"></div>
+                  <span>Retro VHS</span>
+                </button>
+                <button type="button" class="filter-btn" data-filter="cinematic">
+                  <div class="filter-preview filter-cinematic"></div>
+                  <span>Cinematic</span>
+                </button>
+                <button type="button" class="filter-btn" data-filter="monochrome">
+                  <div class="filter-preview filter-mono"></div>
+                  <span>B&W Grain</span>
+                </button>
+                <button type="button" class="filter-btn" data-filter="pixel">
+                  <div class="filter-preview filter-pixel"></div>
+                  <span>8-Bit Pixel</span>
+                </button>
+                <button type="button" class="filter-btn" data-filter="custom_lut" id="customLutPresetBtn" style="display: none;">
+                  <div class="filter-preview filter-lut"></div>
+                  <span id="customLutPresetName">Custom LUT</span>
+                </button>
               </div>
-              <input type="range" id="scanlinesSlider" min="0" max="100" value="0" class="form-slider">
-            </div>
-            
-            <!-- Grain Slider -->
-            <div class="control-slider-wrapper">
-              <div class="slider-header">
-                <span>Film Grain Noise</span>
-                <span id="grainVal">0%</span>
+              <!-- Save Custom User Preset Form -->
+              <div class="save-preset-wrapper" style="margin-top: 10px; display: flex; gap: 6px;">
+                <input type="text" id="savePresetInput" class="form-input" placeholder="Preset name..." style="font-size: 12px; padding: 6px 10px; flex: 1; border-radius: 6px; background: rgba(0,0,0,0.4); border: 1px solid var(--panel-border); color: #fff;">
+                <button id="savePresetBtn" class="btn btn-primary" style="font-size: 12px; padding: 6px 10px; white-space: nowrap;" title="Save current overlay & image adjustments as a custom preset">
+                  <i data-lucide="bookmark-plus"></i> Save
+                </button>
               </div>
-              <input type="range" id="grainSlider" min="0" max="100" value="0" class="form-slider">
-            </div>
-            
-            <!-- Vignette Slider -->
-            <div class="control-slider-wrapper">
-              <div class="slider-header">
-                <span>Vignette</span>
-                <span id="vignetteVal">0%</span>
-              </div>
-              <input type="range" id="vignetteSlider" min="0" max="100" value="0" class="form-slider">
-            </div>
-            
-            <!-- Rounded Corners Slider -->
-            <div class="control-slider-wrapper">
-              <div class="slider-header">
-                <span>Rounded Corners</span>
-                <span id="roundedVal">16px</span>
-              </div>
-              <input type="range" id="roundedSlider" min="0" max="40" value="16" class="form-slider">
-            </div>
-          </div>
-        </div>
 
-        <!-- Section 5: Adjustments -->
-        <div class="control-group collapsible-section">
-          <button type="button" class="section-header-btn" aria-expanded="true">
-            <span class="group-title"><i data-lucide="sliders-horizontal"></i> Image Adjustments</span>
-            <i data-lucide="chevron-down" class="chevron-icon"></i>
-          </button>
-          <div class="section-body">
-            <div class="control-slider-wrapper">
-              <div class="slider-header">
-                <span>Brightness</span>
-                <span id="brightnessVal">100%</span>
+              <div class="custom-lut-uploader" style="margin-top: 8px;">
+                <input type="file" id="lutFileInput" accept=".cube" style="display: none;">
+                <button id="uploadLutBtn" class="btn btn-outline btn-block" style="font-size: 12px; padding: 8px; border: 1px dashed var(--panel-border);" title="Upload Photoshop / Lightroom .cube 3D LUT file">
+                  <i data-lucide="upload"></i> Upload Custom LUT (.cube)
+                </button>
+                <div id="lutStatusInfo" class="select-info" style="margin-top: 4px;"></div>
               </div>
-              <input type="range" id="brightnessSlider" min="50" max="150" value="100" class="form-slider">
             </div>
-            <div class="control-slider-wrapper">
-              <div class="slider-header">
-                <span>Contrast</span>
-                <span id="contrastVal">100%</span>
+
+            <!-- Part 2: Overlay Effects -->
+            <div class="sub-control" style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--panel-border);">
+              <label class="sub-title">Overlay Effects</label>
+              <div class="toggle-list" style="margin-top: 6px;">
+                <!-- HUD Toggle -->
+                <label class="toggle-item">
+                  <span>HUD OSD (REC + Timestamp)</span>
+                  <input type="checkbox" id="toggleHud" checked>
+                  <span class="toggle-slider"></span>
+                </label>
               </div>
-              <input type="range" id="contrastSlider" min="50" max="200" value="100" class="form-slider">
+              
+              <!-- Scanlines Slider -->
+              <div class="control-slider-wrapper">
+                <div class="slider-header">
+                  <span>TV Scanlines</span>
+                  <span id="scanlinesVal">0%</span>
+                </div>
+                <input type="range" id="scanlinesSlider" min="0" max="100" value="0" class="form-slider">
+              </div>
+              
+              <!-- Grain Slider -->
+              <div class="control-slider-wrapper">
+                <div class="slider-header">
+                  <span>Film Grain Noise</span>
+                  <span id="grainVal">0%</span>
+                </div>
+                <input type="range" id="grainSlider" min="0" max="100" value="0" class="form-slider">
+              </div>
+              
+              <!-- Vignette Slider -->
+              <div class="control-slider-wrapper">
+                <div class="slider-header">
+                  <span>Vignette</span>
+                  <span id="vignetteVal">0%</span>
+                </div>
+                <input type="range" id="vignetteSlider" min="0" max="100" value="0" class="form-slider">
+              </div>
+              
+              <!-- Rounded Corners Slider -->
+              <div class="control-slider-wrapper">
+                <div class="slider-header">
+                  <span>Rounded Corners</span>
+                  <span id="roundedVal">16px</span>
+                </div>
+                <input type="range" id="roundedSlider" min="0" max="40" value="16" class="form-slider">
+              </div>
             </div>
-            <div class="control-slider-wrapper">
-              <div class="slider-header">
-                <span>Saturation</span>
-                <span id="saturationVal">100%</span>
+
+            <!-- Part 3: Image Adjustments -->
+            <div class="sub-control" style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--panel-border);">
+              <label class="sub-title">Image Adjustments</label>
+              <div class="control-slider-wrapper" style="margin-top: 6px;">
+                <div class="slider-header">
+                  <span>Brightness</span>
+                  <span id="brightnessVal">100%</span>
+                </div>
+                <input type="range" id="brightnessSlider" min="50" max="150" value="100" class="form-slider">
               </div>
-              <input type="range" id="saturationSlider" min="0" max="200" value="100" class="form-slider">
-            </div>
-            <div class="control-slider-wrapper">
-              <div class="slider-header">
-                <span>Pixelation Size</span>
-                <span id="pixelSizeVal">4px</span>
+              <div class="control-slider-wrapper">
+                <div class="slider-header">
+                  <span>Contrast</span>
+                  <span id="contrastVal">100%</span>
+                </div>
+                <input type="range" id="contrastSlider" min="50" max="200" value="100" class="form-slider">
               </div>
-              <input type="range" id="pixelSizeSlider" min="2" max="16" value="4" class="form-slider" disabled>
+              <div class="control-slider-wrapper">
+                <div class="slider-header">
+                  <span>Saturation</span>
+                  <span id="saturationVal">100%</span>
+                </div>
+                <input type="range" id="saturationSlider" min="0" max="200" value="100" class="form-slider">
+              </div>
+              <div class="control-slider-wrapper">
+                <div class="slider-header">
+                  <span>Pixelation Size</span>
+                  <span id="pixelSizeVal">4px</span>
+                </div>
+                <input type="range" id="pixelSizeSlider" min="2" max="16" value="4" class="form-slider" disabled>
+              </div>
             </div>
           </div>
         </div>
@@ -686,7 +521,7 @@
     </footer>
   </article>
 
-  <script type="module" src="js/main.js?v=24.0"></script>
+  <script type="module" src="js/main.js?v=29.0"></script>
 
   <!-- PWA Service Worker Registration -->
   <script>

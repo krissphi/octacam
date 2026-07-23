@@ -119,5 +119,18 @@ export function resetAllUi(elements) {
   const toggleTpMirror = document.getElementById('toggleTpMirror');
   if (toggleTpMirror) toggleTpMirror.checked = false;
 
+  state.grid.enabled = false;
+  state.grid.type = 'thirds';
+
+  const toggleGrid = document.getElementById('toggleGrid');
+  if (toggleGrid) toggleGrid.checked = false;
+  const gridPresetWrapper = document.getElementById('gridPresetWrapper');
+  if (gridPresetWrapper) gridPresetWrapper.style.display = 'none';
+
+  document.querySelectorAll('.grid-btn').forEach(btn => {
+    if (btn.getAttribute('data-grid') === 'thirds') btn.classList.add('active');
+    else btn.classList.remove('active');
+  });
+
   saveUserPreferences();
 }

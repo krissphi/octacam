@@ -16,6 +16,7 @@ import { applyPreset, getUserPresetsFromStorage, saveUserPresetToStorage, render
 import { bindChromaKeyEvents } from './ui/uiChromaKey.js';
 import { bindZoomEvents } from './ui/uiZoom.js';
 import { bindTeleprompterEvents } from './ui/uiTeleprompter.js';
+import { bindGridEvents } from './ui/uiGrid.js';
 import { bindHotkeyEvents } from './ui/uiHotkeys.js';
 import { resetAllUi } from './ui/uiReset.js';
 
@@ -161,10 +162,25 @@ export function initUiEventListeners(elements) {
     if (typeof savedPrefs.tpText === 'string') {
       state.teleprompter.text = savedPrefs.tpText;
     }
+    if (typeof savedPrefs.gridEnabled === 'boolean') {
+      state.grid.enabled = savedPrefs.gridEnabled;
+      const toggleGrid = document.getElementById('toggleGrid');
+      if (toggleGrid) toggleGrid.checked = savedPrefs.gridEnabled;
+      const gridPresetWrapper = document.getElementById('gridPresetWrapper');
+      if (gridPresetWrapper) gridPresetWrapper.style.display = savedPrefs.gridEnabled ? 'block' : 'none';
+    }
+    if (typeof savedPrefs.gridType === 'string') {
+      state.grid.type = savedPrefs.gridType;
+      document.querySelectorAll('.grid-btn').forEach(btn => {
+        if (btn.getAttribute('data-grid') === savedPrefs.gridType) btn.classList.add('active');
+        else btn.classList.remove('active');
+      });
+    }
   }
 
   bindZoomEvents();
   bindTeleprompterEvents();
+  bindGridEvents();
 
   if (cameraSelect) {
     cameraSelect.addEventListener('change', () => {
