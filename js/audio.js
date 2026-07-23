@@ -60,7 +60,7 @@ function teardownVisualizer() {
   if (highPassNode) { try { highPassNode.disconnect(); } catch(e) {} highPassNode = null; }
   if (clarityNode)  { try { clarityNode.disconnect();  } catch(e) {} clarityNode = null; }
   state.audio.peakLevel = 0;
-  state.audio.statusText = 'Senyap / Nonaktif';
+  state.audio.statusText = 'Silent / Inactive';
   state.audio.statusColor = 'var(--text-secondary)';
   updateVisualizerIdleUI();
 }

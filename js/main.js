@@ -52,8 +52,8 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   // Initial Permission Request & Stream Bootstrapping
   try {
-    if (elements.cameraActiveInfo) elements.cameraActiveInfo.textContent = 'Meminta izin kamera...';
-    if (elements.audioActiveInfo) elements.audioActiveInfo.textContent = 'Meminta izin mikrofon...';
+    if (elements.cameraActiveInfo) elements.cameraActiveInfo.textContent = 'Requesting camera permission...';
+    if (elements.audioActiveInfo) elements.audioActiveInfo.textContent = 'Requesting microphone permission...';
     
     // 1. Start Camera Stream first (triggers camera permission prompt)
     await startCameraStream('', elements.cameraActiveInfo, elements.errorScreen);

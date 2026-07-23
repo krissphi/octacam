@@ -65,6 +65,16 @@ export const state = {
     currentFactor: 1.0,
     currentX: 0.5,
     currentY: 0.5
+  },
+
+  teleprompter: {
+    enabled: false,
+    isScrolling: false,
+    speed: 3,
+    fontSize: 24,
+    opacity: 70,
+    mirror: false,
+    text: 'Welcome to OctaCam Teleprompter!\n\nType or paste your speech script here. Adjust the scroll speed, font size, and background transparency for your maximum comfort.\n\nKeep your eyes focused near the camera lens while reading to maintain excellent eye contact with your audience.'
   }
 };
 
@@ -81,7 +91,13 @@ export function saveUserPreferences() {
       audioEnhancer: state.audioEnhancer,
       countdownSeconds: state.countdownSeconds,
       zoomEnabled: state.zoom.enabled,
-      zoomFactor: state.zoom.factor
+      zoomFactor: state.zoom.factor,
+      tpEnabled: state.teleprompter.enabled,
+      tpSpeed: state.teleprompter.speed,
+      tpFontSize: state.teleprompter.fontSize,
+      tpOpacity: state.teleprompter.opacity,
+      tpMirror: state.teleprompter.mirror,
+      tpText: state.teleprompter.text
     };
     localStorage.setItem('octacam_user_settings', JSON.stringify(prefs));
   } catch (e) {
@@ -116,5 +132,11 @@ export function resetState() {
   state.zoom.factor = 2.5;
   state.zoom.active = false;
   state.zoom.currentFactor = 1.0;
+  state.teleprompter.enabled = false;
+  state.teleprompter.isScrolling = false;
+  state.teleprompter.speed = 3;
+  state.teleprompter.fontSize = 24;
+  state.teleprompter.opacity = 70;
+  state.teleprompter.mirror = false;
   saveUserPreferences();
 }

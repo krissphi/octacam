@@ -15,6 +15,7 @@ import { uploadLutFile, loadSavedLutFromStorage } from './lutParser.js';
 import { applyPreset, getUserPresetsFromStorage, saveUserPresetToStorage, renderUserPresetsInGrid } from './ui/uiPresets.js';
 import { bindChromaKeyEvents } from './ui/uiChromaKey.js';
 import { bindZoomEvents } from './ui/uiZoom.js';
+import { bindTeleprompterEvents } from './ui/uiTeleprompter.js';
 import { bindHotkeyEvents } from './ui/uiHotkeys.js';
 import { resetAllUi } from './ui/uiReset.js';
 
@@ -110,9 +111,60 @@ export function initUiEventListeners(elements) {
       const valEl = document.getElementById('zoomFactorVal');
       if (valEl) valEl.textContent = `${savedPrefs.zoomFactor.toFixed(1)}x`;
     }
+    if (typeof savedPrefs.tpEnabled === 'boolean') {
+      state.teleprompter.enabled = savedPrefs.tpEnabled;
+      const toggleTeleprompter = document.getElementById('toggleTeleprompter');
+      if (toggleTeleprompter) toggleTeleprompter.checked = savedPrefs.tpEnabled;
+      const teleprompterControlsWrapper = document.getElementById('teleprompterControlsWrapper');
+      if (teleprompterControlsWrapper) teleprompterControlsWrapper.style.display = savedPrefs.tpEnabled ? 'block' : 'none';
+      const teleprompterOverlay = document.getElementById('teleprompterOverlay');
+      if (teleprompterOverlay) {
+        if (savedPrefs.tpEnabled) teleprompterOverlay.classList.remove('hidden');
+        else teleprompterOverlay.classList.add('hidden');
+      }
+    }
+    if (typeof savedPrefs.tpSpeed === 'number') {
+      state.teleprompter.speed = savedPrefs.tpSpeed;
+      const slider = document.getElementById('tpSpeedSlider');
+      if (slider) slider.value = savedPrefs.tpSpeed;
+      const valEl = document.getElementById('tpSpeedVal');
+      if (valEl) valEl.textContent = savedPrefs.tpSpeed;
+    }
+    if (typeof savedPrefs.tpFontSize === 'number') {
+      state.teleprompter.fontSize = savedPrefs.tpFontSize;
+      const slider = document.getElementById('tpFontSizeSlider');
+      if (slider) slider.value = savedPrefs.tpFontSize;
+      const valEl = document.getElementById('tpFontSizeVal');
+      if (valEl) valEl.textContent = `${savedPrefs.tpFontSize}px`;
+      const tpDisplay = document.getElementById('teleprompterTextDisplay');
+      if (tpDisplay) tpDisplay.style.fontSize = `${savedPrefs.tpFontSize}px`;
+    }
+    if (typeof savedPrefs.tpOpacity === 'number') {
+      state.teleprompter.opacity = savedPrefs.tpOpacity;
+      const slider = document.getElementById('tpOpacitySlider');
+      if (slider) slider.value = savedPrefs.tpOpacity;
+      const valEl = document.getElementById('tpOpacityVal');
+      if (valEl) valEl.textContent = `${savedPrefs.tpOpacity}%`;
+      const tpOverlay = document.getElementById('teleprompterOverlay');
+      if (tpOverlay) tpOverlay.style.background = `rgba(15, 23, 42, ${savedPrefs.tpOpacity / 100})`;
+    }
+    if (typeof savedPrefs.tpMirror === 'boolean') {
+      state.teleprompter.mirror = savedPrefs.tpMirror;
+      const toggle = document.getElementById('toggleTpMirror');
+      if (toggle) toggle.checked = savedPrefs.tpMirror;
+      const tpContainer = document.getElementById('teleprompterTextContainer');
+      if (tpContainer) {
+        if (savedPrefs.tpMirror) tpContainer.classList.add('mirrored');
+        else tpContainer.classList.remove('mirrored');
+      }
+    }
+    if (typeof savedPrefs.tpText === 'string') {
+      state.teleprompter.text = savedPrefs.tpText;
+    }
   }
 
   bindZoomEvents();
+  bindTeleprompterEvents();
 
   if (cameraSelect) {
     cameraSelect.addEventListener('change', () => {

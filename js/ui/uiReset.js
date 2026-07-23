@@ -91,5 +91,33 @@ export function resetAllUi(elements) {
     elements.canvasContainer.classList.remove('zoom-active');
   }
 
+  state.teleprompter.enabled = false;
+  state.teleprompter.isScrolling = false;
+  state.teleprompter.speed = 3;
+  state.teleprompter.fontSize = 24;
+  state.teleprompter.opacity = 70;
+  state.teleprompter.mirror = false;
+
+  const toggleTeleprompterEl = document.getElementById('toggleTeleprompter');
+  if (toggleTeleprompterEl) toggleTeleprompterEl.checked = false;
+  const teleprompterControlsWrapper = document.getElementById('teleprompterControlsWrapper');
+  if (teleprompterControlsWrapper) teleprompterControlsWrapper.style.display = 'none';
+  const teleprompterOverlay = document.getElementById('teleprompterOverlay');
+  if (teleprompterOverlay) teleprompterOverlay.classList.add('hidden');
+  const tpSpeedSlider = document.getElementById('tpSpeedSlider');
+  if (tpSpeedSlider) tpSpeedSlider.value = 3;
+  const tpSpeedVal = document.getElementById('tpSpeedVal');
+  if (tpSpeedVal) tpSpeedVal.textContent = '3';
+  const tpFontSizeSlider = document.getElementById('tpFontSizeSlider');
+  if (tpFontSizeSlider) tpFontSizeSlider.value = 24;
+  const tpFontSizeVal = document.getElementById('tpFontSizeVal');
+  if (tpFontSizeVal) tpFontSizeVal.textContent = '24px';
+  const tpOpacitySlider = document.getElementById('tpOpacitySlider');
+  if (tpOpacitySlider) tpOpacitySlider.value = 70;
+  const tpOpacityVal = document.getElementById('tpOpacityVal');
+  if (tpOpacityVal) tpOpacityVal.textContent = '70%';
+  const toggleTpMirror = document.getElementById('toggleTpMirror');
+  if (toggleTpMirror) toggleTpMirror.checked = false;
+
   saveUserPreferences();
 }

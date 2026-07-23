@@ -67,6 +67,39 @@
       <div class="countdown-overlay hidden" id="countdownOverlay">
         <span class="countdown-number" id="countdownNumber">3</span>
       </div>
+
+      <!-- Floating Teleprompter Overlay Window -->
+      <div class="teleprompter-overlay hidden" id="teleprompterOverlay">
+        <div class="teleprompter-header" id="teleprompterHeader">
+          <div class="teleprompter-title">
+            <i data-lucide="file-text"></i>
+            <span>Teleprompter</span>
+          </div>
+          <div class="teleprompter-actions">
+            <button type="button" class="tp-btn" id="tpPlayBtn" title="Play / Pause Auto-Scroll (Space)">
+              <i data-lucide="play" id="tpPlayIcon"></i>
+            </button>
+            <button type="button" class="tp-btn" id="tpResetBtn" title="Rewind to Top">
+              <i data-lucide="rotate-ccw"></i>
+            </button>
+            <button type="button" class="tp-btn" id="tpFontPlusBtn" title="Increase Font Size">
+              <i data-lucide="zoom-in"></i>
+            </button>
+            <button type="button" class="tp-btn" id="tpFontMinusBtn" title="Decrease Font Size">
+              <i data-lucide="zoom-out"></i>
+            </button>
+            <button type="button" class="tp-btn" id="tpCloseBtn" title="Close Teleprompter">
+              <i data-lucide="x"></i>
+            </button>
+          </div>
+        </div>
+        <div class="teleprompter-body" id="teleprompterBody">
+          <div class="teleprompter-text-container" id="teleprompterTextContainer">
+            <p id="teleprompterTextDisplay">Welcome to OctaCam Teleprompter!</p>
+          </div>
+        </div>
+        <div class="teleprompter-guide-line"></div>
+      </div>
     </div>
 
     <!-- Floating UI Toggle Button (shown when controls are hidden) -->
@@ -397,6 +430,67 @@
           </div>
         </div>
 
+        <!-- Section: Teleprompter Script -->
+        <div class="control-group collapsible-section">
+          <button type="button" class="section-header-btn" aria-expanded="true">
+            <span class="group-title"><i data-lucide="file-text"></i> Teleprompter Script</span>
+            <i data-lucide="chevron-down" class="chevron-icon"></i>
+          </button>
+          <div class="section-body">
+            <label class="toggle-item" title="Show Teleprompter Script Overlay over Camera View">
+              <span>Enable Teleprompter</span>
+              <input type="checkbox" id="toggleTeleprompter">
+              <span class="toggle-slider"></span>
+            </label>
+
+            <div id="teleprompterControlsWrapper" style="display: none; margin-top: 8px;">
+              <div class="sub-control">
+                <label class="sub-title">Script Content</label>
+                <textarea id="teleprompterScriptInput" class="form-textarea" rows="5" placeholder="Type or paste your speech script here..."></textarea>
+              </div>
+
+              <div style="display: flex; gap: 8px; margin-top: 8px;">
+                <button type="button" id="tpSidebarPlayBtn" class="btn btn-primary" style="flex: 1; font-size: 12px; padding: 8px 10px;">
+                  <i data-lucide="play" id="tpSidebarPlayIcon"></i> <span id="tpSidebarPlayText">Start Scroll</span>
+                </button>
+                <button type="button" id="tpSidebarResetBtn" class="btn btn-outline" style="font-size: 12px; padding: 8px 10px;" title="Rewind to Top">
+                  <i data-lucide="rotate-ccw"></i>
+                </button>
+              </div>
+
+              <div class="control-slider-wrapper" style="margin-top: 8px;">
+                <div class="slider-header">
+                  <span>Scroll Speed</span>
+                  <span id="tpSpeedVal">3</span>
+                </div>
+                <input type="range" id="tpSpeedSlider" min="1" max="10" value="3" class="form-slider">
+              </div>
+
+              <div class="control-slider-wrapper">
+                <div class="slider-header">
+                  <span>Font Size</span>
+                  <span id="tpFontSizeVal">24px</span>
+                </div>
+                <input type="range" id="tpFontSizeSlider" min="16" max="48" value="24" class="form-slider">
+              </div>
+
+              <div class="control-slider-wrapper">
+                <div class="slider-header">
+                  <span>Background Opacity</span>
+                  <span id="tpOpacityVal">70%</span>
+                </div>
+                <input type="range" id="tpOpacitySlider" min="20" max="95" value="70" class="form-slider">
+              </div>
+
+              <label class="toggle-item" style="margin-top: 6px;" title="Flip text horizontally (For physical teleprompter mirror glass setup)">
+                <span>Mirror Text (Glass Rig)</span>
+                <input type="checkbox" id="toggleTpMirror">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
         <!-- Section 4: Overlays & Effects -->
         <div class="control-group collapsible-section">
           <button type="button" class="section-header-btn" aria-expanded="true">
@@ -592,7 +686,7 @@
     </footer>
   </article>
 
-  <script type="module" src="js/main.js?v=22.0"></script>
+  <script type="module" src="js/main.js?v=24.0"></script>
 
   <!-- PWA Service Worker Registration -->
   <script>
